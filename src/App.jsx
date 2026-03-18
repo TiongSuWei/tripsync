@@ -35,7 +35,8 @@ const AuthenticatedApp = () => {
   // Render the main app
   return (
     <Routes>
-      {/* Add your page Route elements here */}
+      <Route path="/" element={<Navigate to="/chat" replace />} />
+      <Route path="/chat" element={<Chat />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
