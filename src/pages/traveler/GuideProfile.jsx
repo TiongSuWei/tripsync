@@ -16,28 +16,6 @@ export default function GuideProfilePage() {
     base44.entities.GuideProfile.filter({ id }).then(r => { setGuide(r[0]); setLoading(false); });
   }, [id]);
 
-  const handleBook = async () => {
-    if (!user || !guide) return;
-    setSubmitting(true);
-    const days = booking.startDate && booking.endDate
-      ? Math.max(1, Math.ceil((new Date(booking.endDate) - new Date(booking.startDate)) / 86400000))
-      : 1;
-    await base44.entities.Booking.create({
-      traveler_email: user.email,
-      traveler_name: user.full_name || user.email,
-      guide_email: guide.guide_email,
-      guide_name: guide.guide_name,
-      destination: booking.destination || guide.location,
-      start_date: booking.startDate || null,
-      end_date: booking.endDate || null,
-      message: booking.message,
-      total_price: (guide.price_per_day || 0) * days,
-      status: 'pending',
-    });
-    setSubmitting(false);
-    setBooked(true);
-  };
-
   if (loading) return <AppShell user={user}><div className="flex justify-center py-20"><div className="w-8 h-8 border-4 border-border border-t-foreground rounded-full animate-spin" /></div></AppShell>;
   if (!guide) return <AppShell user={user}><div className="p-6 text-center text-muted-foreground">Guide not found.</div></AppShell>;
 
