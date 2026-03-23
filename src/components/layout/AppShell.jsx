@@ -38,7 +38,7 @@ export default function AppShell({ user, children }) {
   const items = navItems[role] || navItems.traveler;
 
   const handleLogout = () => {
-    base44.auth.logout('/');
+    base44.auth.logout('/register');
   };
 
   const SidebarContent = () => (
