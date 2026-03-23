@@ -10,7 +10,7 @@ import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import Home from './pages/Home';
 import Register from './pages/Register';
 import Onboard from './pages/Onboard';
-import Chat from './pages/Chat';
+import Chat from './pages/Chat.jsx';
 
 // Traveler
 import TravelerDashboard from './pages/traveler/TravelerDashboard';
