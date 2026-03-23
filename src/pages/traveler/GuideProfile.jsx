@@ -4,16 +4,13 @@ import { base44 } from '@/api/base44Client';
 import AppShell from '@/components/layout/AppShell';
 import useCurrentUser from '@/hooks/useCurrentUser';
 import { Button } from '@/components/ui/button';
-import { MapPin, Star, Globe, DollarSign, Calendar, Send } from 'lucide-react';
+import { MapPin, Star, Globe, DollarSign, Calendar } from 'lucide-react';
 
 export default function GuideProfilePage() {
   const { id } = useParams();
   const { user } = useCurrentUser();
   const [guide, setGuide] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [booking, setBooking] = useState({ destination: '', startDate: '', endDate: '', message: '' });
-  const [submitting, setSubmitting] = useState(false);
-  const [booked, setBooked] = useState(false);
 
   useEffect(() => {
     base44.entities.GuideProfile.filter({ id }).then(r => { setGuide(r[0]); setLoading(false); });
