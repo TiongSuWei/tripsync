@@ -65,34 +65,7 @@ export default function GuideProfilePage() {
               )}
             </div>
 
-            {/* Booking form */}
-            <div className="bg-card border border-border rounded-2xl p-6">
-              <h3 className="font-semibold mb-4">Book {guide.guide_name}</h3>
-              {booked ? (
-                <div className="text-center py-6">
-                  <p className="text-2xl mb-2">✓</p>
-                  <p className="font-semibold mb-1">Booking request sent!</p>
-                  <p className="text-sm text-muted-foreground">The guide will review and respond shortly.</p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  <input value={booking.destination} onChange={e => setBooking(b => ({ ...b, destination: e.target.value }))}
-                    placeholder="Destination / location" className="w-full px-3 py-2.5 bg-background border border-border rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-foreground/30" />
-                  <div className="grid grid-cols-2 gap-3">
-                    <input type="date" value={booking.startDate} onChange={e => setBooking(b => ({ ...b, startDate: e.target.value }))}
-                      className="px-3 py-2.5 bg-background border border-border rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-foreground/30" />
-                    <input type="date" value={booking.endDate} onChange={e => setBooking(b => ({ ...b, endDate: e.target.value }))}
-                      className="px-3 py-2.5 bg-background border border-border rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-foreground/30" />
-                  </div>
-                  <textarea value={booking.message} onChange={e => setBooking(b => ({ ...b, message: e.target.value }))}
-                    placeholder="Tell the guide about your trip…" rows={3}
-                    className="w-full px-3 py-2.5 bg-background border border-border rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-foreground/30 resize-none" />
-                  <Button onClick={handleBook} disabled={submitting} className="w-full rounded-xl gap-2">
-                    <Send className="w-4 h-4" />{submitting ? 'Sending…' : 'Send Booking Request'}
-                  </Button>
-                </div>
-              )}
-            </div>
+
           </div>
         </div>
       </div>
