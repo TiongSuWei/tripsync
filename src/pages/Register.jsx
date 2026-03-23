@@ -47,6 +47,9 @@ export default function Register() {
             <span className="font-playfair font-bold text-xl">TripSync</span>
           </div>
 
+          <Link to="/" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground mb-8 transition-colors">
+            <ArrowLeft className="w-4 h-4" /> Back to home
+          </Link>
           <h1 className="font-playfair text-3xl font-bold mb-2">Create your account</h1>
           <p className="text-muted-foreground mb-8">Choose how you'll use TripSync.</p>
 
