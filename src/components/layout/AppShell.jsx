@@ -69,7 +69,8 @@ export default function AppShell({ user, children }) {
             onClick={() => setMobileOpen(false)}
             className={cn(
               'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-150',
-              location.pathname === item.path || location.pathname.startsWith(item.path + '/')
+              location.pathname === item.path ||
+              (item.path !== '/traveler' && item.path !== '/guide' && item.path !== '/admin' && location.pathname.startsWith(item.path + '/'))
                 ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium'
                 : 'text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground'
             )}
