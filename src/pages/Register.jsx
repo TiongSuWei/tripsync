@@ -157,7 +157,7 @@ export default function Register() {
               <p className="text-center text-sm text-muted-foreground mt-6">
                 Already have an account?{' '}
                 <button
-                  onClick={() => { localStorage.setItem('tripsync_register_role', role); base44.auth.redirectToLogin('/onboard'); }}
+                  onClick={() => base44.auth.redirectToLogin('/onboard')}
                   className="text-foreground font-medium hover:underline"
                 >
                   Sign in
