@@ -27,6 +27,7 @@ const navItems = {
     { label: 'Manage Guides', icon: ShieldCheck, path: '/admin/verify-guides' },
     { label: 'Manage Trips', icon: Globe, path: '/admin/trips' },
     { label: 'All Users', icon: Users, path: '/admin/users' },
+    { label: 'AI Assistant', icon: Compass, path: '/chat' },
   ],
 };
 
