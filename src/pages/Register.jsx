@@ -6,43 +6,15 @@ import { MapPin, User, Compass, Loader2 } from 'lucide-react';
 export default function Register() {
   const [role, setRole] = useState('traveler');
   const [loading, setLoading] = useState(false);
-  const [isPickingRole, setIsPickingRole] = useState(false);
-  const [savingRole, setSavingRole] = useState(false);
   const [error, setError] = useState('');
 
+  // Never auto-redirect — always show role selection first
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('pick_role') === '1') {
-      setIsPickingRole(true);
-      return;
-    }
-    // If user is already logged in with a role, redirect them to their dashboard
-    base44.auth.me().then(user => {
-      if (!user) return;
-      if (user.role === 'admin') { window.location.href = '/admin'; return; }
-      if (user.account_type === 'guide') { window.location.href = '/guide'; return; }
-      if (user.account_type === 'traveler') { window.location.href = '/traveler'; return; }
-      // Logged in but no account_type — show role picker
-      setIsPickingRole(true);
-    }).catch(() => {});
+    // Clear any stale pending role on fresh visit
+    localStorage.removeItem('tripsync_register_role');
   }, []);
 
-  // Called when user is already logged in but needs to pick a role (e.g. Google sign-in)
-  const handleSaveRole = async () => {
-    setSavingRole(true);
-    setError('');
-    try {
-      await base44.auth.updateMe({ account_type: role });
-      if (role === 'guide') window.location.href = '/guide';
-      else window.location.href = '/traveler';
-    } catch (e) {
-      setError('Something went wrong. Please try again.');
-      setSavingRole(false);
-    }
-  };
-
-  // Called for new sign-up: stores role then triggers OAuth
-  const handleRegister = async () => {
+  const handleContinue = async () => {
     setLoading(true);
     setError('');
     try {
@@ -53,35 +25,6 @@ export default function Register() {
       setLoading(false);
     }
   };
-
-  const RoleCards = () => (
-    <div className="grid grid-cols-2 gap-4 mb-8">
-      <button
-        onClick={() => setRole('traveler')}
-        className={`p-5 rounded-2xl border-2 text-left transition-all ${
-          role === 'traveler'
-            ? 'border-foreground bg-secondary'
-            : 'border-border hover:border-foreground/30'
-        }`}
-      >
-        <User className="w-6 h-6 mb-3" />
-        <p className="font-semibold text-sm mb-1">Traveler</p>
-        <p className="text-xs text-muted-foreground">Plan trips, discover guides, manage budgets</p>
-      </button>
-      <button
-        onClick={() => setRole('guide')}
-        className={`p-5 rounded-2xl border-2 text-left transition-all ${
-          role === 'guide'
-            ? 'border-foreground bg-secondary'
-            : 'border-border hover:border-foreground/30'
-        }`}
-      >
-        <Compass className="w-6 h-6 mb-3" />
-        <p className="font-semibold text-sm mb-1">Tour Guide</p>
-        <p className="text-xs text-muted-foreground">Create your profile, receive bookings</p>
-      </button>
-    </div>
-  );
 
   return (
     <div className="min-h-screen bg-background flex">
@@ -111,23 +54,41 @@ export default function Register() {
             <span className="font-playfair font-bold text-xl">TripSync</span>
           </div>
 
+          <h1 className="font-playfair text-3xl font-bold mb-2">How will you use TripSync?</h1>
+          <p className="text-muted-foreground mb-8">Choose your account type to continue.</p>
 
-
-          <h1 className="font-playfair text-3xl font-bold mb-2">
-            {isPickingRole ? 'How will you use TripSync?' : 'Create your account'}
-          </h1>
-          <p className="text-muted-foreground mb-8">
-            {isPickingRole
-              ? 'Choose your account type to get started.'
-              : 'Choose how you\'ll use TripSync.'}
-          </p>
-
-          <RoleCards />
+          {/* Role cards */}
+          <div className="grid grid-cols-2 gap-4 mb-8">
+            <button
+              onClick={() => setRole('traveler')}
+              className={`p-5 rounded-2xl border-2 text-left transition-all ${
+                role === 'traveler'
+                  ? 'border-foreground bg-secondary'
+                  : 'border-border hover:border-foreground/30'
+              }`}
+            >
+              <User className="w-6 h-6 mb-3" />
+              <p className="font-semibold text-sm mb-1">Traveller</p>
+              <p className="text-xs text-muted-foreground">Plan trips, discover guides, manage budgets</p>
+            </button>
+            <button
+              onClick={() => setRole('guide')}
+              className={`p-5 rounded-2xl border-2 text-left transition-all ${
+                role === 'guide'
+                  ? 'border-foreground bg-secondary'
+                  : 'border-border hover:border-foreground/30'
+              }`}
+            >
+              <Compass className="w-6 h-6 mb-3" />
+              <p className="font-semibold text-sm mb-1">Tour Guide</p>
+              <p className="text-xs text-muted-foreground">Create your profile, receive bookings</p>
+            </button>
+          </div>
 
           <div className="bg-secondary/50 rounded-xl p-4 mb-6 text-sm text-muted-foreground">
             {role === 'traveler'
               ? '✓ Search destinations, AI itineraries, browse guides, track your trips.'
-              : '✓ Build your guide profile, set pricing, manage booking requests. Requires admin approval.'}
+              : '✓ Build your guide profile, set pricing, manage booking requests.'}
           </div>
 
           {error && (
@@ -136,43 +97,17 @@ export default function Register() {
             </div>
           )}
 
-          {isPickingRole ? (
-            <Button
-              onClick={handleSaveRole}
-              disabled={savingRole}
-              className="w-full rounded-xl h-11 text-sm font-medium"
-            >
-              {savingRole ? (
-                <><Loader2 className="w-4 h-4 animate-spin mr-2" />Saving…</>
-              ) : (
-                `Continue as ${role === 'traveler' ? 'Traveler' : 'Tour Guide'}`
-              )}
-            </Button>
-          ) : (
-            <>
-              <Button
-                onClick={handleRegister}
-                disabled={loading}
-                className="w-full rounded-xl h-11 text-sm font-medium"
-              >
-                {loading ? (
-                  <><Loader2 className="w-4 h-4 animate-spin mr-2" />Redirecting…</>
-                ) : (
-                  `Continue as ${role === 'traveler' ? 'Traveler' : 'Tour Guide'}`
-                )}
-              </Button>
-
-              <p className="text-center text-sm text-muted-foreground mt-6">
-                Already have an account?{' '}
-                <button
-                  onClick={() => base44.auth.redirectToLogin('/onboard')}
-                  className="text-foreground font-medium hover:underline"
-                >
-                  Sign in
-                </button>
-              </p>
-            </>
-          )}
+          <Button
+            onClick={handleContinue}
+            disabled={loading}
+            className="w-full rounded-xl h-11 text-sm font-medium"
+          >
+            {loading ? (
+              <><Loader2 className="w-4 h-4 animate-spin mr-2" />Redirecting…</>
+            ) : (
+              `Continue as ${role === 'traveler' ? 'Traveller' : 'Tour Guide'}`
+            )}
+          </Button>
         </div>
       </div>
     </div>
