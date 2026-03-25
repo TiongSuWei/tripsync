@@ -45,7 +45,7 @@ export default function GuideProfileEditor() {
     if (profile) {
       await base44.entities.GuideProfile.update(profile.id, data);
     } else {
-      const created = await base44.entities.GuideProfile.create({ ...data, status: 'pending', verified: false });
+      const created = await base44.entities.GuideProfile.create({ ...data, status: 'approved', verified: true });
       setProfile(created);
     }
     setSaving(false);
@@ -65,9 +65,8 @@ export default function GuideProfileEditor() {
 
         {profile && (
           <div className="bg-secondary/50 border border-border rounded-xl px-4 py-3 mb-6 text-sm flex items-center gap-2">
-            <span className={`w-2 h-2 rounded-full ${profile.status === 'approved' ? 'bg-foreground' : profile.status === 'pending' ? 'bg-muted-foreground' : 'bg-muted-foreground'}`} />
-            Profile status: <span className="font-medium capitalize">{profile.status}</span>
-            {profile.status === 'pending' && <span className="text-muted-foreground">— awaiting admin review</span>}
+            <span className="w-2 h-2 rounded-full bg-foreground" />
+            Profile is <span className="font-medium">active</span> — visible to travelers
           </div>
         )}
 
@@ -139,7 +138,7 @@ export default function GuideProfileEditor() {
           </div>
 
           <Button onClick={handleSave} disabled={saving} className="w-full rounded-xl gap-2">
-            {saving ? <><Loader2 className="w-4 h-4 animate-spin" />Saving…</> : <><Save className="w-4 h-4" />{saved ? 'Saved!' : profile ? 'Update Profile' : 'Submit for Review'}</>}
+            {saving ? <><Loader2 className="w-4 h-4 animate-spin" />Saving…</> : <><Save className="w-4 h-4" />{saved ? 'Saved!' : profile ? 'Update Profile' : 'Create Profile'}</>}
           </Button>
         </div>
       </div>
