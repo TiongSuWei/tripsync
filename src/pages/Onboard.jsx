@@ -1,8 +1,10 @@
 import { useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 
-// Runs after OAuth login and routes the user to the correct dashboard.
-// The pending role from localStorage is always applied (set by Register page before OAuth).
+// Runs after OAuth login:
+// 1. Applies the selected role
+// 2. Sends OTP to user's email
+// 3. Redirects to /verify-otp for 2FA
 export default function Onboard() {
   useEffect(() => {
     const run = async () => {
@@ -15,7 +17,15 @@ export default function Onboard() {
       const pendingType = localStorage.getItem('tripsync_register_role');
       localStorage.removeItem('tripsync_register_role');
 
-      // Always apply the selected role from the register page
+      // Determine the role to apply
+      const roleToApply = pendingType || user.account_type;
+
+      if (!roleToApply) {
+        window.location.href = '/register';
+        return;
+      }
+
+      // Apply the role if it's new
       if (pendingType) {
         await base44.auth.updateMe({ account_type: pendingType });
 
@@ -31,19 +41,17 @@ export default function Onboard() {
             });
           }
         }
-
-        redirect(pendingType);
-      } else if (user.account_type) {
-        // Fallback: user somehow landed here without going through register
-        redirect(user.account_type);
-      } else {
-        window.location.href = '/register';
       }
-    };
 
-    const redirect = (type) => {
-      if (type === 'guide') window.location.href = '/guide';
-      else window.location.href = '/traveler';
+      // Store destination so verify-otp page knows where to send the user
+      const dest = roleToApply === 'guide' ? '/guide' : '/traveler';
+      localStorage.setItem('tripsync_otp_dest', dest);
+
+      // Send OTP email
+      await base44.functions.invoke('sendOtp', {});
+
+      // Redirect to 2FA verification page
+      window.location.href = '/verify-otp';
     };
 
     run();
