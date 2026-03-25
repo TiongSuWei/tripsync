@@ -18,7 +18,6 @@ import SearchPlan from './pages/traveler/SearchPlan';
 import MyTrips from './pages/traveler/MyTrips';
 import GuideList from './pages/traveler/GuideList';
 import GuideProfilePage from './pages/traveler/GuideProfile';
-import MyBookings from './pages/traveler/MyBookings';
 
 // Guide
 import GuideDashboard from './pages/guide/GuideDashboard';
@@ -60,7 +59,7 @@ const AuthenticatedApp = () => {
       <Route path="/trips" element={<RoleGuard allowedRoles={['traveler']}><MyTrips /></RoleGuard>} />
       <Route path="/guides" element={<RoleGuard allowedRoles={['traveler']}><GuideList /></RoleGuard>} />
       <Route path="/guides/:id" element={<RoleGuard allowedRoles={['traveler']}><GuideProfilePage /></RoleGuard>} />
-      <Route path="/my-bookings" element={<RoleGuard allowedRoles={['traveler']}><MyBookings /></RoleGuard>} />
+
       <Route path="/chat" element={<RoleGuard allowedRoles={['traveler', 'admin']}><Chat /></RoleGuard>} />
 
       {/* Guide */}
