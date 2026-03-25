@@ -51,7 +51,7 @@ const AuthenticatedApp = () => {
   return (
     <Routes>
       {/* Public */}
-      <Route path="/" element={<Home />} />
+      <Route path="/" element={<Navigate to="/register" replace />} />
       <Route path="/register" element={<Register />} />
       <Route path="/onboard" element={<Onboard />} />
 
