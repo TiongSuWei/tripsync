@@ -17,6 +17,14 @@ export default function Onboard() {
       const pendingType = localStorage.getItem('tripsync_register_role');
       localStorage.removeItem('tripsync_register_role');
 
+      // Admin users skip role selection entirely
+      if (user.role === 'admin' && !pendingType) {
+        localStorage.setItem('tripsync_otp_dest', '/admin');
+        await base44.functions.invoke('sendOtp', {});
+        window.location.href = '/verify-otp';
+        return;
+      }
+
       // Determine the role to apply
       const roleToApply = pendingType || user.account_type;
 
