@@ -9,12 +9,10 @@ import { Search, BookOpen, Compass, ArrowRight, MapPin } from 'lucide-react';
 export default function TravelerDashboard() {
   const { user, loading } = useCurrentUser();
   const [trips, setTrips] = useState([]);
-  const [bookings, setBookings] = useState([]);
 
   useEffect(() => {
     if (user) {
       base44.entities.Trip.filter({ traveler_email: user.email }, '-created_date', 5).then(setTrips);
-      base44.entities.Booking.filter({ traveler_email: user.email }, '-created_date', 5).then(setBookings);
     }
   }, [user]);
 
