@@ -12,11 +12,10 @@ export default function GuideDashboard() {
   const [bookings, setBookings] = useState([]);
 
   useEffect(() => {
-    if (user) {
-      base44.entities.GuideProfile.filter({ guide_email: user.email }).then(r => setProfile(r[0] || null));
-      base44.entities.Booking.filter({ guide_email: user.email }, '-created_date', 5).then(setBookings);
-    }
-  }, [user]);
+    if (!user?.email) return;
+    base44.entities.GuideProfile.filter({ guide_email: user.email }).then(r => setProfile(r[0] || null));
+    base44.entities.Booking.filter({ guide_email: user.email }, '-created_date', 5).then(setBookings);
+  }, [user?.email]);
 
   const pending = bookings.filter(b => b.status === 'pending').length;
   const accepted = bookings.filter(b => b.status === 'accepted').length;
