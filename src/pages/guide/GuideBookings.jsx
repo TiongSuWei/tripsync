@@ -12,10 +12,10 @@ export default function GuideBookings() {
   const [filter, setFilter] = useState('all');
 
   useEffect(() => {
-    if (user) {
-      base44.entities.Booking.filter({ guide_email: user.email }, '-created_date').then(b => { setBookings(b); setLoading(false); });
-    }
-  }, [user]);
+    if (!user) return;
+    base44.entities.Booking.filter({ guide_email: user.email }, '-created_date')
+      .then(b => { setBookings(b); setLoading(false); });
+  }, [user?.email]);
 
   const updateStatus = async (id, status) => {
     await base44.entities.Booking.update(id, { status });
