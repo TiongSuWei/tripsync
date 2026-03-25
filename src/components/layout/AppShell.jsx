@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import {
   MapPin, LayoutDashboard, Search, BookOpen, Users, Calendar,
-  Settings, LogOut, Menu, X, Star, ShieldCheck, Globe, Compass
+  LogOut, Menu, Star, ShieldCheck, Globe, Compass
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 
