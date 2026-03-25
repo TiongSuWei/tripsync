@@ -35,7 +35,7 @@ export default function AppShell({ user, children }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const role = user?.role === 'admin' ? 'admin' : (user?.account_type || 'traveler');
+  const role = user?.account_type || (user?.role === 'admin' ? 'admin' : 'traveler');
   const items = navItems[role] || navItems.traveler;
 
   const handleLogout = () => {
