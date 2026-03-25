@@ -15,7 +15,7 @@ const navItems = {
     { label: 'My Trips', icon: BookOpen, path: '/trips' },
     { label: 'AI Assistant', icon: Compass, path: '/chat' },
     { label: 'Tour Guides', icon: Users, path: '/guides' },
-
+    { label: 'My Bookings', icon: Calendar, path: '/my-bookings' },
   ],
   guide: [
     { label: 'Dashboard', icon: LayoutDashboard, path: '/guide' },
