@@ -47,7 +47,7 @@ export default function TravelerDashboard() {
           <Link to="/guides" className="group bg-card border border-border rounded-2xl p-6 hover:border-foreground/30 transition-colors">
             <MapPin className="w-6 h-6 mb-3" />
             <p className="font-semibold mb-1">Find a Guide</p>
-            <p className="text-sm text-muted-foreground">Browse verified locals</p>
+            <p className="text-sm text-muted-foreground">Browse local experts</p>
           </Link>
           <Link to="/chat" className="group bg-card border border-border rounded-2xl p-6 hover:border-foreground/30 transition-colors">
             <Compass className="w-6 h-6 mb-3" />
