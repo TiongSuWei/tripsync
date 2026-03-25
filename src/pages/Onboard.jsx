@@ -17,9 +17,10 @@ export default function Onboard() {
 
       const pendingType = localStorage.getItem('tripsync_register_role');
 
+      localStorage.removeItem('tripsync_register_role');
+
       if (pendingType && !user.account_type) {
         await base44.auth.updateMe({ account_type: pendingType });
-        localStorage.removeItem('tripsync_register_role');
 
         // Auto-create a GuideProfile stub so the guide is instantly visible
         if (pendingType === 'guide') {
