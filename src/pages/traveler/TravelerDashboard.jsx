@@ -54,7 +54,7 @@ export default function TravelerDashboard() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-3 gap-4 mb-8">
+        <div className="grid grid-cols-2 gap-4 mb-8">
           {stats.map(s => (
             <Link key={s.label} to={s.path} className="bg-card border border-border rounded-2xl p-5 hover:border-foreground/20 transition-colors">
               <p className="text-3xl font-bold font-playfair mb-1">{s.value}</p>
