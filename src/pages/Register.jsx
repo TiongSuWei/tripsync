@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
-import { MapPin, User, Compass, ArrowLeft, Loader2 } from 'lucide-react';
+import { MapPin, User, Compass, Loader2 } from 'lucide-react';
 
 export default function Register() {
   const [role, setRole] = useState('traveler');
