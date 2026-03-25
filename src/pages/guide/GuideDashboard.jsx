@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import AppShell from '@/components/layout/AppShell';
 import useCurrentUser from '@/hooks/useCurrentUser';
 import { Button } from '@/components/ui/button';
-import { Star, Calendar, ArrowRight, CheckCircle, Clock, XCircle } from 'lucide-react';
+import { Star, Calendar, ArrowRight, CheckCircle } from 'lucide-react';
 
 export default function GuideDashboard() {
   const { user } = useCurrentUser();
@@ -41,21 +41,11 @@ export default function GuideDashboard() {
             </Link>
           </div>
         ) : (
-          <div className={`rounded-2xl p-4 mb-6 flex items-center gap-3 border ${
-            profile.status === 'approved' ? 'bg-card border-border' :
-            profile.status === 'pending' ? 'bg-secondary/50 border-border' :
-            'bg-secondary/50 border-border'
-          }`}>
-            {profile.status === 'approved' ? <CheckCircle className="w-5 h-5 flex-shrink-0" /> :
-             profile.status === 'pending' ? <Clock className="w-5 h-5 flex-shrink-0 text-muted-foreground" /> :
-             <XCircle className="w-5 h-5 flex-shrink-0 text-muted-foreground" />}
+          <div className="rounded-2xl p-4 mb-6 flex items-center gap-3 border bg-card border-border">
+            <CheckCircle className="w-5 h-5 flex-shrink-0" />
             <div>
-              <p className="font-medium text-sm capitalize">Profile {profile.status}</p>
-              <p className="text-xs text-muted-foreground">
-                {profile.status === 'approved' ? 'Your profile is live and accepting bookings.' :
-                 profile.status === 'pending' ? 'Awaiting admin verification.' :
-                 'Your application was not approved. Please contact support.'}
-              </p>
+              <p className="font-medium text-sm">Profile Active</p>
+              <p className="text-xs text-muted-foreground">Your profile is live and accepting bookings.</p>
             </div>
           </div>
         )}

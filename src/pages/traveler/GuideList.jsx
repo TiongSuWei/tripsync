@@ -13,7 +13,7 @@ export default function GuideList() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    base44.entities.GuideProfile.filter({ status: 'approved' }, '-rating').then(g => { setGuides(g); setLoading(false); });
+    base44.entities.GuideProfile.list('-created_date').then(g => { setGuides(g); setLoading(false); });
   }, []);
 
   const filtered = guides.filter(g =>
