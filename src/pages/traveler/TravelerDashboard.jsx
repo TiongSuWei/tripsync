@@ -20,7 +20,6 @@ export default function TravelerDashboard() {
 
   const stats = [
     { label: 'My Trips', value: trips.length, icon: BookOpen, path: '/trips' },
-    { label: 'Bookings', value: bookings.length, icon: Calendar, path: '/my-bookings' },
     { label: 'AI Chats', value: '∞', icon: Compass, path: '/chat' },
   ];
 
