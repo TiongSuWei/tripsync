@@ -56,24 +56,24 @@ const AuthenticatedApp = () => {
       <Route path="/onboard" element={<Onboard />} />
 
       {/* Traveler */}
-      <Route path="/traveler" element={<TravelerDashboard />} />
-      <Route path="/search" element={<SearchPlan />} />
-      <Route path="/trips" element={<MyTrips />} />
-      <Route path="/guides" element={<GuideList />} />
-      <Route path="/guides/:id" element={<GuideProfilePage />} />
-      <Route path="/my-bookings" element={<MyBookings />} />
-      <Route path="/chat" element={<Chat />} />
+      <Route path="/traveler" element={<RoleGuard allowedRoles={['traveler']}><TravelerDashboard /></RoleGuard>} />
+      <Route path="/search" element={<RoleGuard allowedRoles={['traveler']}><SearchPlan /></RoleGuard>} />
+      <Route path="/trips" element={<RoleGuard allowedRoles={['traveler']}><MyTrips /></RoleGuard>} />
+      <Route path="/guides" element={<RoleGuard allowedRoles={['traveler']}><GuideList /></RoleGuard>} />
+      <Route path="/guides/:id" element={<RoleGuard allowedRoles={['traveler']}><GuideProfilePage /></RoleGuard>} />
+      <Route path="/my-bookings" element={<RoleGuard allowedRoles={['traveler']}><MyBookings /></RoleGuard>} />
+      <Route path="/chat" element={<RoleGuard allowedRoles={['traveler']}><Chat /></RoleGuard>} />
 
       {/* Guide */}
-      <Route path="/guide" element={<GuideDashboard />} />
-      <Route path="/guide/profile" element={<GuideProfileEditor />} />
-      <Route path="/guide/bookings" element={<GuideBookings />} />
+      <Route path="/guide" element={<RoleGuard allowedRoles={['guide']}><GuideDashboard /></RoleGuard>} />
+      <Route path="/guide/profile" element={<RoleGuard allowedRoles={['guide']}><GuideProfileEditor /></RoleGuard>} />
+      <Route path="/guide/bookings" element={<RoleGuard allowedRoles={['guide']}><GuideBookings /></RoleGuard>} />
 
       {/* Admin */}
-      <Route path="/admin" element={<AdminDashboard />} />
-      <Route path="/admin/verify-guides" element={<VerifyGuides />} />
-      <Route path="/admin/trips" element={<AdminTrips />} />
-      <Route path="/admin/users" element={<AdminUsers />} />
+      <Route path="/admin" element={<RoleGuard allowedRoles={['admin']}><AdminDashboard /></RoleGuard>} />
+      <Route path="/admin/verify-guides" element={<RoleGuard allowedRoles={['admin']}><VerifyGuides /></RoleGuard>} />
+      <Route path="/admin/trips" element={<RoleGuard allowedRoles={['admin']}><AdminTrips /></RoleGuard>} />
+      <Route path="/admin/users" element={<RoleGuard allowedRoles={['admin']}><AdminUsers /></RoleGuard>} />
 
       <Route path="*" element={<PageNotFound />} />
     </Routes>
