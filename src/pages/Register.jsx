@@ -14,16 +14,10 @@ export default function Register() {
     localStorage.removeItem('tripsync_register_role');
   }, []);
 
-  const handleContinue = async () => {
+  const handleContinue = () => {
     setLoading(true);
-    setError('');
-    try {
-      localStorage.setItem('tripsync_register_role', role);
-      base44.auth.redirectToLogin('/onboard');
-    } catch {
-      setError('Something went wrong. Please try again.');
-      setLoading(false);
-    }
+    localStorage.setItem('tripsync_register_role', role);
+    base44.auth.loginWithProvider('google', '/onboard');
   };
 
   return (
