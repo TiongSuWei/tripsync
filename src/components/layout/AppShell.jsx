@@ -39,6 +39,7 @@ export default function AppShell({ user, children }) {
   const items = navItems[role] || navItems.traveler;
 
   const handleLogout = () => {
+    localStorage.removeItem('tripsync_register_role');
     base44.auth.logout('/register');
   };
 
