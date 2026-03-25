@@ -31,10 +31,10 @@ export default function VerifyGuides() {
         </div>
 
         <div className="flex gap-2 mb-6 flex-wrap">
-          {['pending', 'approved', 'rejected', 'all'].map(f => (
+          {['all', 'approved', 'inactive'].map(f => (
             <button key={f} onClick={() => setFilter(f)}
               className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors capitalize ${filter === f ? 'bg-foreground text-background' : 'bg-card border border-border text-muted-foreground hover:text-foreground'}`}>
-              {f} {f !== 'all' && `(${guides.filter(g => g.status === f).length})`}
+              {f === 'all' ? `All (${guides.length})` : `${f} (${guides.filter(g => g.status === f).length})`}
             </button>
           ))}
         </div>
