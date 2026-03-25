@@ -27,7 +27,7 @@ export default function GuideList() {
       <div className="p-6 max-w-5xl mx-auto">
         <div className="mb-8">
           <h1 className="font-playfair text-3xl font-bold mb-1">Tour Guides</h1>
-          <p className="text-muted-foreground">Connect with verified local experts around the world.</p>
+          <p className="text-muted-foreground">Connect with local experts around the world.</p>
         </div>
 
         <div className="relative mb-6">
