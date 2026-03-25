@@ -11,6 +11,7 @@ import RoleGuard from '@/components/layout/RoleGuard';
 import Register from './pages/Register';
 import Onboard from './pages/Onboard';
 import Chat from './pages/Chat';
+import VerifyOtp from './pages/VerifyOtp';
 
 // Traveler
 import TravelerDashboard from './pages/traveler/TravelerDashboard';
@@ -52,6 +53,7 @@ const AuthenticatedApp = () => {
       <Route path="/" element={<Navigate to="/register" replace />} />
       <Route path="/register" element={<Register />} />
       <Route path="/onboard" element={<Onboard />} />
+      <Route path="/verify-otp" element={<VerifyOtp />} />
 
       {/* Traveler */}
       <Route path="/traveler" element={<RoleGuard allowedRoles={['traveler']}><TravelerDashboard /></RoleGuard>} />
