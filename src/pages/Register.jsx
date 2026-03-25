@@ -10,8 +10,19 @@ export default function Register() {
 
   // Never auto-redirect — always show role selection first
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
     setLoading(true);
+    // Check if the user is already logged in with an existing role
+    const isLoggedIn = await base44.auth.isAuthenticated();
+    if (isLoggedIn) {
+      const me = await base44.auth.me();
+      // If already has a role assigned, don't overwrite it — just proceed to onboard/verify
+      if (me?.account_type) {
+        window.location.href = '/onboard';
+        return;
+      }
+    }
+    // New user — store their chosen role and send to login
     localStorage.setItem('tripsync_register_role', role);
     base44.auth.redirectToLogin('/onboard');
   };
