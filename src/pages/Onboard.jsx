@@ -2,10 +2,7 @@ import { useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 
 // Runs after OAuth login and routes the user to the correct dashboard.
-// Flow:
-//   1. If a pending account_type is in localStorage (user just registered), apply it and redirect.
-//   2. If user already has account_type saved, redirect to the correct dashboard.
-//   3. If no account_type (new Google login), redirect to /register to pick one.
+// The pending role from localStorage is always applied (set by Register page before OAuth).
 export default function Onboard() {
   useEffect(() => {
     const run = async () => {
@@ -16,10 +13,10 @@ export default function Onboard() {
       }
 
       const pendingType = localStorage.getItem('tripsync_register_role');
-
       localStorage.removeItem('tripsync_register_role');
 
-      if (pendingType && !user.account_type) {
+      // Always apply the selected role from the register page
+      if (pendingType) {
         await base44.auth.updateMe({ account_type: pendingType });
 
         // Auto-create a GuideProfile stub so the guide is instantly visible
@@ -35,19 +32,17 @@ export default function Onboard() {
           }
         }
 
-        redirect(user.role === 'admin' ? 'admin' : pendingType);
-      } else if (user.role === 'admin') {
-        redirect('admin');
+        redirect(pendingType);
       } else if (user.account_type) {
+        // Fallback: user somehow landed here without going through register
         redirect(user.account_type);
       } else {
-        window.location.href = '/register?pick_role=1';
+        window.location.href = '/register';
       }
     };
 
     const redirect = (type) => {
-      if (type === 'admin') window.location.href = '/admin';
-      else if (type === 'guide') window.location.href = '/guide';
+      if (type === 'guide') window.location.href = '/guide';
       else window.location.href = '/traveler';
     };
 
