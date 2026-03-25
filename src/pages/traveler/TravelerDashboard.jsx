@@ -100,34 +100,7 @@ export default function TravelerDashboard() {
           )}
         </div>
 
-        {/* Recent bookings */}
-        <div className="bg-card border border-border rounded-2xl p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="font-semibold">Recent Bookings</h2>
-            <Link to="/my-bookings" className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1">
-              View all <ArrowRight className="w-3 h-3" />
-            </Link>
-          </div>
-          {bookings.length === 0 ? (
-            <p className="text-muted-foreground text-sm text-center py-6">No bookings yet.</p>
-          ) : (
-            <div className="space-y-3">
-              {bookings.map(b => (
-                <div key={b.id} className="flex items-center justify-between py-3 border-b border-border last:border-0">
-                  <div>
-                    <p className="text-sm font-medium">{b.guide_name}</p>
-                    <p className="text-xs text-muted-foreground">{b.destination}</p>
-                  </div>
-                  <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${
-                    b.status === 'accepted' ? 'bg-secondary text-foreground' :
-                    b.status === 'pending' ? 'bg-secondary text-muted-foreground' :
-                    'bg-secondary text-muted-foreground'
-                  }`}>{b.status}</span>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+
       </div>
     </AppShell>
   );
