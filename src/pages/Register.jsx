@@ -9,10 +9,6 @@ export default function Register() {
   const [error, setError] = useState('');
 
   // Never auto-redirect — always show role selection first
-  useEffect(() => {
-    // Clear any stale pending role on fresh visit
-    localStorage.removeItem('tripsync_register_role');
-  }, []);
 
   const handleContinue = () => {
     setLoading(true);
