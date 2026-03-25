@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import AppShell from '@/components/layout/AppShell';
 import useCurrentUser from '@/hooks/useCurrentUser';
 import { Button } from '@/components/ui/button';
-import { Search, BookOpen, Calendar, Compass, ArrowRight, MapPin, Clock } from 'lucide-react';
+import { Search, BookOpen, Compass, ArrowRight, MapPin } from 'lucide-react';
 
 export default function TravelerDashboard() {
   const { user, loading } = useCurrentUser();
