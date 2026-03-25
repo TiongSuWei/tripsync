@@ -64,10 +64,10 @@ export default function GuideBookings() {
                       <p className="text-xs text-muted-foreground">{b.traveler_email}</p>
                     </div>
                   </div>
-                  <span className={`text-xs px-2.5 py-1 rounded-full capitalize font-medium ${
-                    b.status === 'accepted' ? 'bg-secondary text-foreground' :
-                    b.status === 'pending' ? 'bg-secondary text-muted-foreground' :
-                    'bg-secondary text-muted-foreground'
+                  <span className={`text-xs px-3 py-1 rounded-full capitalize font-semibold ${
+                    b.status === 'accepted' ? 'bg-green-100 text-green-700' :
+                    b.status === 'rejected' ? 'bg-red-100 text-red-600' :
+                    'bg-amber-100 text-amber-700'
                   }`}>{b.status}</span>
                 </div>
 
