@@ -17,7 +17,7 @@ export default function Onboard() {
 
       const pendingType = localStorage.getItem('tripsync_register_role');
 
-      if (pendingType) {
+      if (pendingType && !user.account_type) {
         await base44.auth.updateMe({ account_type: pendingType });
         localStorage.removeItem('tripsync_register_role');
 
