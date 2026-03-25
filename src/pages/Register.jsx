@@ -103,11 +103,7 @@ export default function Register() {
             <span className="font-playfair font-bold text-xl">TripSync</span>
           </div>
 
-          {!isPickingRole && (
-            <Link to="/" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground mb-8 transition-colors">
-              <ArrowLeft className="w-4 h-4" /> Back to home
-            </Link>
-          )}
+
 
           <h1 className="font-playfair text-3xl font-bold mb-2">
             {isPickingRole ? 'How will you use TripSync?' : 'Create your account'}
