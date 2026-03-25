@@ -80,16 +80,17 @@ export default function VerifyGuides() {
                   </div>
                 )}
 
-                {g.status === 'pending' && (
-                  <div className="flex gap-2">
-                    <Button onClick={() => updateStatus(g.id, 'approved')} size="sm" className="flex-1 rounded-xl gap-1.5">
-                      <Check className="w-3.5 h-3.5" />Approve
+                <div className="flex gap-2">
+                  {g.status === 'approved' ? (
+                    <Button onClick={() => updateStatus(g.id, 'inactive')} variant="outline" size="sm" className="rounded-xl gap-1.5 hover:bg-destructive/10 hover:text-destructive hover:border-destructive/30">
+                      <X className="w-3.5 h-3.5" />Deactivate
                     </Button>
-                    <Button onClick={() => updateStatus(g.id, 'rejected')} variant="outline" size="sm" className="flex-1 rounded-xl gap-1.5 hover:bg-destructive/10 hover:text-destructive hover:border-destructive/30">
-                      <X className="w-3.5 h-3.5" />Reject
+                  ) : (
+                    <Button onClick={() => updateStatus(g.id, 'approved')} size="sm" className="rounded-xl gap-1.5">
+                      <Check className="w-3.5 h-3.5" />Activate
                     </Button>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             ))}
           </div>
