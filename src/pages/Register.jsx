@@ -23,7 +23,7 @@ export default function Register() {
     setSavingRole(true);
     setError('');
     try {
-      await base44.auth.updateMe({ role });
+      await base44.auth.updateMe({ account_type: role });
       if (role === 'guide') window.location.href = '/guide';
       else window.location.href = '/traveler';
     } catch (e) {
