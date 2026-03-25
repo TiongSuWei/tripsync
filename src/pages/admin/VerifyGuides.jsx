@@ -9,7 +9,7 @@ export default function VerifyGuides() {
   const { user } = useCurrentUser();
   const [guides, setGuides] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState('pending');
+  const [filter, setFilter] = useState('all');
 
   useEffect(() => {
     base44.entities.GuideProfile.list('-created_date').then(g => { setGuides(g); setLoading(false); });
@@ -26,8 +26,8 @@ export default function VerifyGuides() {
     <AppShell user={user}>
       <div className="p-6 max-w-4xl mx-auto">
         <div className="mb-8">
-          <h1 className="font-playfair text-3xl font-bold mb-1">Verify Tour Guides</h1>
-          <p className="text-muted-foreground">Review and approve guide applications.</p>
+          <h1 className="font-playfair text-3xl font-bold mb-1">Manage Tour Guides</h1>
+          <p className="text-muted-foreground">View and manage all registered tour guides.</p>
         </div>
 
         <div className="flex gap-2 mb-6 flex-wrap">
