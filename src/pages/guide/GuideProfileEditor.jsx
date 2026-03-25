@@ -40,12 +40,22 @@ export default function GuideProfileEditor() {
 
   const handleSave = async () => {
     if (!user) return;
+    if (!form.guide_name?.trim()) {
+      alert('Please enter your full name.');
+      return;
+    }
     setSaving(true);
-    const data = { ...form, guide_email: user.email, price_per_day: parseFloat(form.price_per_day) || 0 };
+    const data = {
+      ...form,
+      guide_email: user.email,
+      price_per_day: parseFloat(form.price_per_day) || 0,
+      status: 'approved',
+      verified: true,
+    };
     if (profile) {
       await base44.entities.GuideProfile.update(profile.id, data);
     } else {
-      const created = await base44.entities.GuideProfile.create({ ...data, status: 'approved', verified: true });
+      const created = await base44.entities.GuideProfile.create(data);
       setProfile(created);
     }
     setSaving(false);
