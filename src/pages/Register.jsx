@@ -11,11 +11,20 @@ export default function Register() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    // If redirected here after Google login with no role, show role picker directly
     const params = new URLSearchParams(window.location.search);
     if (params.get('pick_role') === '1') {
       setIsPickingRole(true);
+      return;
     }
+    // If user is already logged in with a role, redirect them to their dashboard
+    base44.auth.me().then(user => {
+      if (!user) return;
+      if (user.role === 'admin') { window.location.href = '/admin'; return; }
+      if (user.account_type === 'guide') { window.location.href = '/guide'; return; }
+      if (user.account_type === 'traveler') { window.location.href = '/traveler'; return; }
+      // Logged in but no account_type — show role picker
+      setIsPickingRole(true);
+    }).catch(() => {});
   }, []);
 
   // Called when user is already logged in but needs to pick a role (e.g. Google sign-in)
