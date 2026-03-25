@@ -13,7 +13,7 @@ export default function Register() {
   const handleContinue = () => {
     setLoading(true);
     localStorage.setItem('tripsync_register_role', role);
-    base44.auth.loginWithProvider('google', '/onboard');
+    base44.auth.redirectToLogin('/onboard');
   };
 
   return (
