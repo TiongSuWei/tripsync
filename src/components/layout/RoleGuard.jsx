@@ -8,11 +8,12 @@ const typeDashboard = {
   traveler: '/traveler',
 };
 
-// Returns the effective role: admins use platform role, others use account_type
+// Returns the effective role: account_type takes priority; fall back to platform role only if no account_type
 function getEffectiveRole(user) {
   if (!user) return null;
+  if (user.account_type) return user.account_type;
   if (user.role === 'admin') return 'admin';
-  return user.account_type || null;
+  return null;
 }
 
 export default function RoleGuard({ allowedRoles, children }) {
