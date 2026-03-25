@@ -8,7 +8,6 @@ import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import RoleGuard from '@/components/layout/RoleGuard';
 
 // Pages
-import Home from './pages/Home';
 import Register from './pages/Register';
 import Onboard from './pages/Onboard';
 import Chat from './pages/Chat';
