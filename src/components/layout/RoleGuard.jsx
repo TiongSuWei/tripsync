@@ -2,12 +2,18 @@ import { useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Navigate } from 'react-router-dom';
 
-// Maps a role to its default dashboard path
-const roleDashboard = {
+const typeDashboard = {
   admin: '/admin',
   guide: '/guide',
   traveler: '/traveler',
 };
+
+// Returns the effective role: admins use platform role, others use account_type
+function getEffectiveRole(user) {
+  if (!user) return null;
+  if (user.role === 'admin') return 'admin';
+  return user.account_type || null;
+}
 
 export default function RoleGuard({ allowedRoles, children }) {
   const [user, setUser] = useState(null);
@@ -25,15 +31,14 @@ export default function RoleGuard({ allowedRoles, children }) {
     </div>
   );
 
-  // Not logged in → go to register
   if (!user) return <Navigate to="/register" replace />;
 
-  // No role set yet → go pick one
-  if (!user.role || user.role === 'user') return <Navigate to="/register?pick_role=1" replace />;
+  const effectiveRole = getEffectiveRole(user);
 
-  // Wrong role → redirect to their correct dashboard
-  if (!allowedRoles.includes(user.role)) {
-    const dest = roleDashboard[user.role] || '/register';
+  if (!effectiveRole) return <Navigate to="/register?pick_role=1" replace />;
+
+  if (!allowedRoles.includes(effectiveRole)) {
+    const dest = typeDashboard[effectiveRole] || '/register';
     return <Navigate to={dest} replace />;
   }
 
