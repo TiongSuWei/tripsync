@@ -61,7 +61,7 @@ const AuthenticatedApp = () => {
       <Route path="/guides" element={<RoleGuard allowedRoles={['traveler']}><GuideList /></RoleGuard>} />
       <Route path="/guides/:id" element={<RoleGuard allowedRoles={['traveler']}><GuideProfilePage /></RoleGuard>} />
       <Route path="/my-bookings" element={<RoleGuard allowedRoles={['traveler']}><MyBookings /></RoleGuard>} />
-      <Route path="/chat" element={<RoleGuard allowedRoles={['traveler']}><Chat /></RoleGuard>} />
+      <Route path="/chat" element={<RoleGuard allowedRoles={['traveler', 'admin']}><Chat /></RoleGuard>} />
 
       {/* Guide */}
       <Route path="/guide" element={<RoleGuard allowedRoles={['guide']}><GuideDashboard /></RoleGuard>} />
