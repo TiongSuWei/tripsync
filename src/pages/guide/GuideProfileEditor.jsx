@@ -17,13 +17,15 @@ export default function GuideProfileEditor() {
   const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
-    if (user) {
-      setForm(f => ({ ...f, guide_name: user.full_name || '' }));
-      base44.entities.GuideProfile.filter({ guide_email: user.email }).then(r => {
-        if (r[0]) { setProfile(r[0]); setForm({ ...r[0], price_per_day: r[0].price_per_day || '', languages: r[0].languages || [], specialties: r[0].specialties || [] }); }
-      });
-    }
-  }, [user]);
+    if (!user?.email) return;
+    setForm(f => ({ ...f, guide_name: user.full_name || '' }));
+    base44.entities.GuideProfile.filter({ guide_email: user.email }).then(r => {
+      if (r[0]) {
+        setProfile(r[0]);
+        setForm({ ...r[0], price_per_day: r[0].price_per_day || '', languages: r[0].languages || [], specialties: r[0].specialties || [] });
+      }
+    });
+  }, [user?.email]);
 
   const toggleArr = (key, val) => setForm(f => ({
     ...f, [key]: f[key].includes(val) ? f[key].filter(x => x !== val) : [...f[key], val]
