@@ -20,6 +20,20 @@ export default function Onboard() {
       if (pendingType) {
         await base44.auth.updateMe({ account_type: pendingType });
         localStorage.removeItem('tripsync_register_role');
+
+        // Auto-create a GuideProfile stub so the guide is instantly visible
+        if (pendingType === 'guide') {
+          const existing = await base44.entities.GuideProfile.filter({ guide_email: user.email });
+          if (existing.length === 0) {
+            await base44.entities.GuideProfile.create({
+              guide_email: user.email,
+              guide_name: user.full_name || user.email,
+              status: 'approved',
+              verified: true,
+            });
+          }
+        }
+
         redirect(user.role === 'admin' ? 'admin' : pendingType);
       } else if (user.role === 'admin') {
         redirect('admin');
