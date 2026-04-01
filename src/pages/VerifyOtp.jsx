@@ -55,16 +55,20 @@ export default function VerifyOtp() {
     setLoading(true);
     setError('');
 
-    const response = await base44.functions.invoke('verifyOtp', { code: fullCode });
-
-    if (response.data?.success) {
-      setSuccess(true);
-      // Redirect to the destination stored during onboarding
-      const dest = localStorage.getItem('tripsync_otp_dest') || '/traveler';
-      localStorage.removeItem('tripsync_otp_dest');
-      setTimeout(() => { window.location.href = dest; }, 800);
-    } else {
-      setError(response.data?.error || 'Verification failed. Please try again.');
+    try {
+      const response = await base44.functions.invoke('verifyOtp', { code: fullCode });
+      if (response.data?.success) {
+        setSuccess(true);
+        const dest = localStorage.getItem('tripsync_otp_dest') || '/traveler';
+        localStorage.removeItem('tripsync_otp_dest');
+        setTimeout(() => { window.location.href = dest; }, 800);
+      } else {
+        setError(response.data?.error || 'Verification failed. Please try again.');
+        setLoading(false);
+      }
+    } catch (err) {
+      const msg = err?.response?.data?.error || err?.message || 'Verification failed. Please try again.';
+      setError(msg);
       setLoading(false);
     }
   };
@@ -75,12 +79,10 @@ export default function VerifyOtp() {
     setCode(['', '', '', '', '', '']);
     setCountdown(600);
 
-    const response = await base44.functions.invoke('sendOtp', {});
-
-    if (response.data?.success) {
-      setError('');
-    } else {
-      setError(response.data?.error || 'Failed to resend code.');
+    try {
+      await base44.functions.invoke('sendOtp', {});
+    } catch (err) {
+      setError(err?.response?.data?.error || err?.message || 'Failed to resend code.');
     }
     setResending(false);
     inputRefs.current[0]?.focus();
