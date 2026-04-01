@@ -11,10 +11,20 @@ export default function GuideBookings() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
 
-  useEffect(() => {
-    if (!user) return;
+  const fetchBookings = () => {
+    if (!user?.email) return;
     base44.entities.Booking.filter({ guide_email: user.email }, '-created_date')
       .then(b => { setBookings(b); setLoading(false); });
+  };
+
+  useEffect(() => {
+    fetchBookings();
+  }, [user?.email]);
+
+  // Refresh when the tab regains focus (e.g. traveller acted in another tab/account)
+  useEffect(() => {
+    window.addEventListener('focus', fetchBookings);
+    return () => window.removeEventListener('focus', fetchBookings);
   }, [user?.email]);
 
   const updateStatus = async (id, status) => {
@@ -22,7 +32,14 @@ export default function GuideBookings() {
     setBookings(bs => bs.map(b => b.id === id ? { ...b, status } : b));
   };
 
-  const filtered = filter === 'all' ? bookings : bookings.filter(b => b.status === filter);
+  const filtered = filter === 'all'
+    ? bookings
+    : bookings.filter(b => {
+        if (filter === 'rejected') {
+          return b.status === 'rejected' || b.traveler_decision === 'rejected_by_traveler';
+        }
+        return b.status === filter;
+      });
 
   return (
     <AppShell user={user}>
