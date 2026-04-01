@@ -73,7 +73,7 @@ export default function GuideBookings() {
                     {b.status === 'accepted' && b.traveler_decision === 'accepted_by_traveler' && (
                       <span className="text-xs px-2.5 py-0.5 rounded-full bg-green-50 text-green-800 font-medium">Traveller confirmed</span>
                     )}
-                    {b.status === 'accepted' && b.traveler_decision === 'rejected_by_traveler' && (
+                    {b.status === 'rejected' && b.traveler_decision === 'rejected_by_traveler' && (
                       <span className="text-xs px-2.5 py-0.5 rounded-full bg-red-50 text-red-700 font-medium">Traveller rejected</span>
                     )}
                   </div>

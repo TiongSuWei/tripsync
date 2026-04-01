@@ -33,8 +33,11 @@ export default function MyBookings() {
 
   const handleDecision = async (bookingId, decision) => {
     setActing(bookingId);
-    await base44.entities.Booking.update(bookingId, { traveler_decision: decision });
-    setBookings(bs => bs.map(b => b.id === bookingId ? { ...b, traveler_decision: decision } : b));
+    const updates = { traveler_decision: decision };
+    // If traveller rejects, also mark the booking status as rejected so the guide sees it
+    if (decision === 'rejected_by_traveler') updates.status = 'rejected';
+    await base44.entities.Booking.update(bookingId, updates);
+    setBookings(bs => bs.map(b => b.id === bookingId ? { ...b, ...updates } : b));
     setActing(null);
   };
 
