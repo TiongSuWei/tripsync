@@ -9,6 +9,7 @@ import RoleGuard from '@/components/layout/RoleGuard';
 
 // Pages
 import Register from './pages/Register';
+import SignIn from './pages/SignIn';
 import Onboard from './pages/Onboard';
 import Chat from './pages/Chat';
 import VerifyOtp from './pages/VerifyOtp';
@@ -53,6 +54,7 @@ const AuthenticatedApp = () => {
       {/* Public */}
       <Route path="/" element={<Navigate to="/register" replace />} />
       <Route path="/register" element={<Register />} />
+      <Route path="/signin" element={<SignIn />} />
       <Route path="/onboard" element={<Onboard />} />
       <Route path="/verify-otp" element={<VerifyOtp />} />
 

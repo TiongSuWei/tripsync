@@ -29,12 +29,9 @@ export default function Register() {
           window.location.href = dest;
           return;
         }
-        // Has a role but no OTP session yet → send through OTP (returning user, new browser session)
+        // Has a role but no OTP session yet → send to sign-in to re-authenticate before OTP
         if (me?.account_type) {
-          const dest = me.account_type === 'guide' ? '/guide' : '/traveler';
-          localStorage.setItem('tripsync_otp_dest', dest);
-          await base44.functions.invoke('sendOtp', {});
-          window.location.href = '/verify-otp';
+          window.location.href = '/signin';
           return;
         }
       } catch (_) {}
@@ -43,18 +40,11 @@ export default function Register() {
     check();
   }, []);
 
-  const handleContinue = async () => {
-    setLoading(true);
-    // Always store the chosen role so Onboard applies it
+  const handleContinue = () => {
+    // Store chosen role then always go to sign-in page first
     localStorage.setItem('tripsync_register_role', role);
-    // Clear any previous OTP verification so the new role gets a fresh OTP pass
     sessionStorage.removeItem('tripsync_otp_verified');
-    const isLoggedIn = await base44.auth.isAuthenticated();
-    if (isLoggedIn) {
-      window.location.href = '/onboard';
-      return;
-    }
-    base44.auth.redirectToLogin('/onboard');
+    window.location.href = '/signin';
   };
 
   if (checking) return (
