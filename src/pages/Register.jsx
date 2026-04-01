@@ -8,33 +8,60 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Never auto-redirect — always show role selection first
+  const [checking, setChecking] = useState(true);
 
-  // Auto-redirect already-authenticated users with a role straight to their dashboard
+  // On mount: if user is already authenticated with a role AND has passed OTP, skip to their dashboard
   useEffect(() => {
-    base44.auth.isAuthenticated().then(async (authed) => {
-      if (!authed) return;
-      const me = await base44.auth.me();
-      if (me?.account_type) {
-        const dest = me.account_type === 'guide' ? '/guide' : me.role === 'admin' ? '/admin' : '/traveler';
-        window.location.href = dest;
-      }
-    });
+    const check = async () => {
+      try {
+        const authed = await base44.auth.isAuthenticated();
+        if (!authed) { setChecking(false); return; }
+        const me = await base44.auth.me();
+        // Admin always goes to admin dashboard
+        if (me?.role === 'admin' && !me?.account_type) {
+          window.location.href = '/admin';
+          return;
+        }
+        // Has a role and has already verified OTP in this session → go straight to dashboard
+        const otpVerified = sessionStorage.getItem('tripsync_otp_verified');
+        if (me?.account_type && otpVerified) {
+          const dest = me.account_type === 'guide' ? '/guide' : '/traveler';
+          window.location.href = dest;
+          return;
+        }
+        // Has a role but no OTP session yet → send through OTP (returning user, new browser session)
+        if (me?.account_type) {
+          const dest = me.account_type === 'guide' ? '/guide' : '/traveler';
+          localStorage.setItem('tripsync_otp_dest', dest);
+          await base44.functions.invoke('sendOtp', {});
+          window.location.href = '/verify-otp';
+          return;
+        }
+      } catch (_) {}
+      setChecking(false);
+    };
+    check();
   }, []);
 
   const handleContinue = async () => {
     setLoading(true);
     // Always store the chosen role so Onboard applies it
     localStorage.setItem('tripsync_register_role', role);
+    // Clear any previous OTP verification so the new role gets a fresh OTP pass
+    sessionStorage.removeItem('tripsync_otp_verified');
     const isLoggedIn = await base44.auth.isAuthenticated();
     if (isLoggedIn) {
-      // Already authenticated — go straight to onboard to apply the selected role
       window.location.href = '/onboard';
       return;
     }
-    // Not logged in — redirect to OAuth login, then onboard
     base44.auth.redirectToLogin('/onboard');
   };
+
+  if (checking) return (
+    <div className="flex h-screen items-center justify-center bg-background">
+      <div className="w-8 h-8 border-4 border-border border-t-foreground rounded-full animate-spin" />
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-background flex">

@@ -59,6 +59,8 @@ export default function VerifyOtp() {
       const response = await base44.functions.invoke('verifyOtp', { code: fullCode });
       if (response.data?.success) {
         setSuccess(true);
+        // Mark this browser session as OTP-verified so returning users skip OTP
+        sessionStorage.setItem('tripsync_otp_verified', '1');
         const dest = localStorage.getItem('tripsync_otp_dest') || '/traveler';
         localStorage.removeItem('tripsync_otp_dest');
         setTimeout(() => { window.location.href = dest; }, 800);

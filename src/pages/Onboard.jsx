@@ -17,8 +17,10 @@ export default function Onboard() {
       const pendingType = localStorage.getItem('tripsync_register_role');
       localStorage.removeItem('tripsync_register_role');
 
-      // Admin users skip role selection entirely
+      // Admin users — skip role logic, just send to OTP or dashboard
       if (user.role === 'admin' && !pendingType) {
+        const otpVerified = sessionStorage.getItem('tripsync_otp_verified');
+        if (otpVerified) { window.location.href = '/admin'; return; }
         localStorage.setItem('tripsync_otp_dest', '/admin');
         await base44.functions.invoke('sendOtp', {});
         window.location.href = '/verify-otp';
@@ -33,7 +35,15 @@ export default function Onboard() {
         return;
       }
 
-      // Always apply the pending role if the user explicitly selected one
+      const dest = roleToApply === 'guide' ? '/guide' : '/traveler';
+
+      // Returning user with same role + already OTP-verified this session → skip OTP
+      if (!pendingType && sessionStorage.getItem('tripsync_otp_verified')) {
+        window.location.href = dest;
+        return;
+      }
+
+      // Apply the new role if the user explicitly selected one
       if (pendingType) {
         await base44.auth.updateMe({ account_type: pendingType });
 
@@ -51,14 +61,11 @@ export default function Onboard() {
         }
       }
 
-      // Store destination so verify-otp page knows where to send the user
-      const dest = roleToApply === 'guide' ? '/guide' : '/traveler';
+      // Store destination so verify-otp knows where to send the user
       localStorage.setItem('tripsync_otp_dest', dest);
 
-      // Send OTP email
+      // Send OTP and proceed to 2FA
       await base44.functions.invoke('sendOtp', {});
-
-      // Redirect to 2FA verification page
       window.location.href = '/verify-otp';
     };
 
