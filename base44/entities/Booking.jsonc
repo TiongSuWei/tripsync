@@ -1,0 +1,59 @@
+{
+  "name": "Booking",
+  "type": "object",
+  "properties": {
+    "traveler_email": {
+      "type": "string"
+    },
+    "traveler_name": {
+      "type": "string"
+    },
+    "guide_email": {
+      "type": "string"
+    },
+    "guide_name": {
+      "type": "string"
+    },
+    "destination": {
+      "type": "string"
+    },
+    "start_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "end_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "message": {
+      "type": "string"
+    },
+    "total_price": {
+      "type": "number"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "accepted",
+        "rejected",
+        "completed"
+      ],
+      "default": "pending"
+    },
+    "traveler_decision": {
+      "type": "string",
+      "enum": [
+        "pending_traveler",
+        "accepted_by_traveler",
+        "rejected_by_traveler"
+      ],
+      "default": "pending_traveler",
+      "description": "Traveller's decision after the guide accepts the booking"
+    }
+  },
+  "required": [
+    "traveler_email",
+    "guide_email"
+  ]
+}

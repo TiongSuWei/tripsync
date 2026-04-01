@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import {
   MapPin, LayoutDashboard, Search, BookOpen, Users, Calendar,
-  LogOut, Menu, Star, ShieldCheck, Globe, Compass
+  LogOut, Menu, Star, ShieldCheck, Globe, Compass, CalendarCheck
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 
@@ -15,6 +15,7 @@ const navItems = {
     { label: 'My Trips', icon: BookOpen, path: '/trips' },
     { label: 'AI Assistant', icon: Compass, path: '/chat' },
     { label: 'Tour Guides', icon: Users, path: '/guides' },
+    { label: 'My Bookings', icon: CalendarCheck, path: '/bookings' },
 
   ],
   guide: [

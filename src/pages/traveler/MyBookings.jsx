@@ -2,25 +2,46 @@ import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import AppShell from '@/components/layout/AppShell';
 import useCurrentUser from '@/hooks/useCurrentUser';
-import { Calendar, MapPin } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Calendar, MapPin, Check, X } from 'lucide-react';
 
-const statusStyle = {
-  pending: 'bg-secondary text-muted-foreground',
-  accepted: 'bg-secondary text-foreground',
-  rejected: 'bg-secondary text-muted-foreground',
-  completed: 'bg-secondary text-muted-foreground',
+// Guide's status label (what the guide did)
+const guideStatusLabel = {
+  pending:  { label: 'Awaiting guide response', cls: 'bg-amber-50 text-amber-700' },
+  accepted: { label: 'Guide accepted',           cls: 'bg-green-50 text-green-700' },
+  rejected: { label: 'Guide declined',           cls: 'bg-secondary text-muted-foreground' },
+  completed:{ label: 'Completed',                cls: 'bg-secondary text-foreground' },
+};
+
+// Traveller decision badge
+const travelerDecisionLabel = {
+  accepted_by_traveler: { label: 'You confirmed this guide', cls: 'bg-green-100 text-green-800' },
+  rejected_by_traveler: { label: 'You rejected this guide',  cls: 'bg-red-50 text-red-700' },
 };
 
 export default function MyBookings() {
   const { user } = useCurrentUser();
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [acting, setActing] = useState(null); // id of booking being acted on
 
   useEffect(() => {
-    if (user) {
-      base44.entities.Booking.filter({ traveler_email: user.email }, '-created_date').then(b => { setBookings(b); setLoading(false); });
-    }
-  }, [user]);
+    if (!user?.email) return;
+    base44.entities.Booking.filter({ traveler_email: user.email }, '-created_date')
+      .then(b => { setBookings(b); setLoading(false); });
+  }, [user?.email]);
+
+  const handleDecision = async (bookingId, decision) => {
+    setActing(bookingId);
+    await base44.entities.Booking.update(bookingId, { traveler_decision: decision });
+    setBookings(bs => bs.map(b => b.id === bookingId ? { ...b, traveler_decision: decision } : b));
+    setActing(null);
+  };
+
+  // A booking needs traveller action when: guide accepted AND no traveller decision yet
+  const needsAction = (b) =>
+    b.status === 'accepted' &&
+    (!b.traveler_decision || b.traveler_decision === 'pending_traveler');
 
   return (
     <AppShell user={user}>
@@ -31,7 +52,9 @@ export default function MyBookings() {
         </div>
 
         {loading ? (
-          <div className="flex justify-center py-16"><div className="w-8 h-8 border-4 border-border border-t-foreground rounded-full animate-spin" /></div>
+          <div className="flex justify-center py-16">
+            <div className="w-8 h-8 border-4 border-border border-t-foreground rounded-full animate-spin" />
+          </div>
         ) : bookings.length === 0 ? (
           <div className="text-center py-20 bg-card border border-border rounded-2xl">
             <Calendar className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
@@ -40,26 +63,75 @@ export default function MyBookings() {
           </div>
         ) : (
           <div className="space-y-4">
-            {bookings.map(b => (
-              <div key={b.id} className="bg-card border border-border rounded-2xl p-5">
-                <div className="flex items-start justify-between mb-3">
-                  <div>
-                    <p className="font-semibold">{b.guide_name}</p>
-                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-0.5">
-                      <MapPin className="w-3 h-3" />{b.destination}
+            {bookings.map(b => {
+              const gs = guideStatusLabel[b.status] || guideStatusLabel.pending;
+              const td = travelerDecisionLabel[b.traveler_decision];
+              const isActing = acting === b.id;
+
+              return (
+                <div key={b.id} className={`bg-card border rounded-2xl p-5 transition-all ${needsAction(b) ? 'border-foreground/30 shadow-sm' : 'border-border'}`}>
+                  {/* Header */}
+                  <div className="flex items-start justify-between mb-3">
+                    <div>
+                      <p className="font-semibold">{b.guide_name}</p>
+                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-0.5">
+                        <MapPin className="w-3 h-3" />{b.destination}
+                      </div>
                     </div>
+                    <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${gs.cls}`}>
+                      {gs.label}
+                    </span>
                   </div>
-                  <span className={`text-xs px-2.5 py-1 rounded-full font-medium capitalize ${statusStyle[b.status]}`}>
-                    {b.status}
-                  </span>
+
+                  {/* Dates & price */}
+                  <div className="flex items-center gap-4 text-xs text-muted-foreground mb-3">
+                    {b.start_date && <span>{b.start_date} → {b.end_date}</span>}
+                    {b.total_price && <span className="font-medium text-foreground">${b.total_price.toLocaleString()} total</span>}
+                  </div>
+
+                  {b.message && (
+                    <p className="text-xs text-muted-foreground bg-secondary/50 rounded-xl px-3 py-2 mb-4">
+                      {b.message}
+                    </p>
+                  )}
+
+                  {/* Traveller decision badge (already decided) */}
+                  {td && (
+                    <div className={`text-xs font-medium px-3 py-2 rounded-xl ${td.cls}`}>
+                      {td.label}
+                    </div>
+                  )}
+
+                  {/* Traveller action required — guide has accepted, awaiting traveller */}
+                  {needsAction(b) && (
+                    <div className="mt-3 pt-3 border-t border-border">
+                      <p className="text-xs font-medium mb-2.5">The guide has accepted your request. Do you want to confirm this guide?</p>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          className="flex-1 rounded-xl gap-1.5"
+                          disabled={isActing}
+                          onClick={() => handleDecision(b.id, 'accepted_by_traveler')}
+                        >
+                          <Check className="w-3.5 h-3.5" />
+                          Accept Tour Guide
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="flex-1 rounded-xl gap-1.5 hover:bg-destructive/10 hover:text-destructive hover:border-destructive/30"
+                          disabled={isActing}
+                          onClick={() => handleDecision(b.id, 'rejected_by_traveler')}
+                        >
+                          <X className="w-3.5 h-3.5" />
+                          Reject Tour Guide
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                 </div>
-                <div className="flex items-center gap-4 text-xs text-muted-foreground mb-3">
-                  {b.start_date && <span>{b.start_date} → {b.end_date}</span>}
-                  {b.total_price && <span className="font-medium text-foreground">${b.total_price.toLocaleString()} total</span>}
-                </div>
-                {b.message && <p className="text-xs text-muted-foreground bg-secondary/50 rounded-xl px-3 py-2">{b.message}</p>}
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
