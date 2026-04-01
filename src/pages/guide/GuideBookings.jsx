@@ -81,19 +81,26 @@ export default function GuideBookings() {
                       <p className="text-xs text-muted-foreground">{b.traveler_email}</p>
                     </div>
                   </div>
-                  <div className="flex flex-col items-end gap-1">
-                    <span className={`text-xs px-3 py-1 rounded-full capitalize font-semibold ${
-                      b.status === 'accepted' ? 'bg-green-100 text-green-700' :
-                      b.status === 'rejected' ? 'bg-red-100 text-red-600' :
-                      'bg-amber-100 text-amber-700'
-                    }`}>{b.status}</span>
-                    {b.status === 'accepted' && b.traveler_decision === 'accepted_by_traveler' && (
-                      <span className="text-xs px-2.5 py-0.5 rounded-full bg-green-50 text-green-800 font-medium">Traveller confirmed</span>
-                    )}
-                    {b.status === 'rejected' && b.traveler_decision === 'rejected_by_traveler' && (
-                      <span className="text-xs px-2.5 py-0.5 rounded-full bg-red-50 text-red-700 font-medium">Traveller rejected</span>
-                    )}
-                  </div>
+                  {(() => {
+                    const isRejected = b.status === 'rejected' || b.traveler_decision === 'rejected_by_traveler';
+                    const isConfirmed = !isRejected && b.traveler_decision === 'accepted_by_traveler';
+                    const effectiveStatus = isRejected ? 'rejected' : b.status;
+                    return (
+                      <div className="flex flex-col items-end gap-1">
+                        <span className={`text-xs px-3 py-1 rounded-full capitalize font-semibold ${
+                          effectiveStatus === 'accepted' ? 'bg-green-100 text-green-700' :
+                          effectiveStatus === 'rejected' ? 'bg-red-100 text-red-600' :
+                          'bg-amber-100 text-amber-700'
+                        }`}>{effectiveStatus}</span>
+                        {isConfirmed && (
+                          <span className="text-xs px-2.5 py-0.5 rounded-full bg-green-50 text-green-800 font-medium">Traveller confirmed</span>
+                        )}
+                        {isRejected && b.traveler_decision === 'rejected_by_traveler' && (
+                          <span className="text-xs px-2.5 py-0.5 rounded-full bg-red-50 text-red-700 font-medium">Traveller rejected</span>
+                        )}
+                      </div>
+                    );
+                  })()}
                 </div>
 
                 {b.start_date && (
