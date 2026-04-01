@@ -4,6 +4,7 @@ import { base44 } from '@/api/base44Client';
 import AppShell from '@/components/layout/AppShell';
 import useCurrentUser from '@/hooks/useCurrentUser';
 import { MapPin, Star, Globe, DollarSign, Calendar } from 'lucide-react';
+import GuideDecisionPanel from '@/components/traveler/GuideDecisionPanel';
 
 export default function GuideProfilePage() {
   const { id } = useParams();
@@ -62,6 +63,12 @@ export default function GuideProfilePage() {
                   </div>
                 </div>
               )}
+            </div>
+
+            <div className="bg-card border border-border rounded-2xl p-6">
+              <h3 className="font-semibold mb-1">Book This Guide</h3>
+              <p className="text-xs text-muted-foreground mb-1">Accept to send a booking request, or reject if this guide isn't the right fit.</p>
+              <GuideDecisionPanel guide={guide} user={user} />
             </div>
 
 
