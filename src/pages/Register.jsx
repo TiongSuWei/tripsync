@@ -1,57 +1,16 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
-import { MapPin, User, Compass, Loader2 } from 'lucide-react';
+import { MapPin, User, Compass } from 'lucide-react';
 
 export default function Register() {
   const [role, setRole] = useState('traveler');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-
-  const [checking, setChecking] = useState(true);
-
-  // On mount: if user is already authenticated with a role AND has passed OTP, skip to their dashboard
-  useEffect(() => {
-    const check = async () => {
-      try {
-        const authed = await base44.auth.isAuthenticated();
-        if (!authed) { setChecking(false); return; }
-        const me = await base44.auth.me();
-        // Admin always goes to admin dashboard
-        if (me?.role === 'admin' && !me?.account_type) {
-          window.location.href = '/admin';
-          return;
-        }
-        // Has a role and has already verified OTP in this session → go straight to dashboard
-        const otpVerified = sessionStorage.getItem('tripsync_otp_verified');
-        if (me?.account_type && otpVerified) {
-          const dest = me.account_type === 'guide' ? '/guide' : '/traveler';
-          window.location.href = dest;
-          return;
-        }
-        // Has a role but no OTP session yet → send to sign-in to re-authenticate before OTP
-        if (me?.account_type) {
-          window.location.href = '/signin';
-          return;
-        }
-      } catch (_) {}
-      setChecking(false);
-    };
-    check();
-  }, []);
 
   const handleContinue = () => {
-    // Store chosen role then always go to sign-in page first
     localStorage.setItem('tripsync_register_role', role);
     sessionStorage.removeItem('tripsync_otp_verified');
     window.location.href = '/signin';
   };
-
-  if (checking) return (
-    <div className="flex h-screen items-center justify-center bg-background">
-      <div className="w-8 h-8 border-4 border-border border-t-foreground rounded-full animate-spin" />
-    </div>
-  );
 
   return (
     <div className="min-h-screen bg-background flex">
@@ -118,22 +77,11 @@ export default function Register() {
               : '✓ Build your guide profile, set pricing, manage booking requests.'}
           </div>
 
-          {error && (
-            <div className="mb-4 px-4 py-3 bg-destructive/10 text-destructive text-sm rounded-xl">
-              {error}
-            </div>
-          )}
-
           <Button
             onClick={handleContinue}
-            disabled={loading}
             className="w-full rounded-xl h-11 text-sm font-medium"
           >
-            {loading ? (
-              <><Loader2 className="w-4 h-4 animate-spin mr-2" />Redirecting…</>
-            ) : (
-              `Continue as ${role === 'traveler' ? 'Traveller' : 'Tour Guide'}`
-            )}
+            {`Continue as ${role === 'traveler' ? 'Traveller' : 'Tour Guide'}`}
           </Button>
         </div>
       </div>
