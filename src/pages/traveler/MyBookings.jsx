@@ -5,18 +5,21 @@ import useCurrentUser from '@/hooks/useCurrentUser';
 import { Button } from '@/components/ui/button';
 import { Calendar, MapPin, Check, X } from 'lucide-react';
 
-// Guide's status label (what the guide did)
-const guideStatusLabel = {
-  pending:  { label: 'Awaiting guide response', cls: 'bg-amber-50 text-amber-700' },
-  accepted: { label: 'Guide accepted',           cls: 'bg-green-50 text-green-700' },
-  rejected: { label: 'Guide declined',           cls: 'bg-secondary text-muted-foreground' },
-  completed:{ label: 'Completed',                cls: 'bg-secondary text-foreground' },
-};
-
-// Traveller decision badge
-const travelerDecisionLabel = {
-  accepted_by_traveler: { label: 'You confirmed this guide', cls: 'bg-green-100 text-green-800' },
-  rejected_by_traveler: { label: 'You rejected this guide',  cls: 'bg-red-50 text-red-700' },
+// Derive the single final status badge to show the traveller
+const getFinalStatusBadge = (b) => {
+  if (b.status === 'rejected' || b.traveler_decision === 'rejected_by_traveler') {
+    return { label: 'Rejected', cls: 'bg-red-100 text-red-700' };
+  }
+  if (b.traveler_decision === 'accepted_by_traveler') {
+    return { label: 'Confirmed', cls: 'bg-green-100 text-green-800' };
+  }
+  if (b.status === 'accepted') {
+    return { label: 'Guide accepted — awaiting your decision', cls: 'bg-green-50 text-green-700' };
+  }
+  if (b.status === 'completed') {
+    return { label: 'Completed', cls: 'bg-secondary text-foreground' };
+  }
+  return { label: 'Awaiting guide response', cls: 'bg-amber-50 text-amber-700' };
 };
 
 export default function MyBookings() {
@@ -67,10 +70,9 @@ export default function MyBookings() {
         ) : (
           <div className="space-y-4">
             {bookings.map(b => {
-              const gs = guideStatusLabel[b.status] || guideStatusLabel.pending;
-              const td = travelerDecisionLabel[b.traveler_decision];
               const isActing = acting === b.id;
 
+              const badge = getFinalStatusBadge(b);
               return (
                 <div key={b.id} className={`bg-card border rounded-2xl p-5 transition-all ${needsAction(b) ? 'border-foreground/30 shadow-sm' : 'border-border'}`}>
                   {/* Header */}
@@ -81,8 +83,8 @@ export default function MyBookings() {
                         <MapPin className="w-3 h-3" />{b.destination}
                       </div>
                     </div>
-                    <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${gs.cls}`}>
-                      {gs.label}
+                    <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${badge.cls}`}>
+                      {badge.label}
                     </span>
                   </div>
 
@@ -96,13 +98,6 @@ export default function MyBookings() {
                     <p className="text-xs text-muted-foreground bg-secondary/50 rounded-xl px-3 py-2 mb-4">
                       {b.message}
                     </p>
-                  )}
-
-                  {/* Traveller decision badge (already decided) */}
-                  {td && (
-                    <div className={`text-xs font-medium px-3 py-2 rounded-xl ${td.cls}`}>
-                      {td.label}
-                    </div>
                   )}
 
                   {/* Traveller action required — guide has accepted, awaiting traveller */}
