@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import AppShell from '@/components/layout/AppShell';
 import useCurrentUser from '@/hooks/useCurrentUser';
 import { Button } from '@/components/ui/button';
-import { Calendar, MapPin, Check, X, User } from 'lucide-react';
+import { Calendar, Check, X, User } from 'lucide-react';
 
 export default function GuideBookings() {
   const { user } = useCurrentUser();
@@ -79,11 +79,11 @@ export default function GuideBookings() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3 text-xs text-muted-foreground mb-3">
-                  <div className="flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5" />{b.destination}</div>
-                  {b.start_date && <div className="flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5" />{b.start_date} → {b.end_date}</div>}
-                  {b.total_price && <div className="font-semibold text-foreground">${b.total_price.toLocaleString()}</div>}
-                </div>
+                {b.start_date && (
+                  <div className="text-xs text-muted-foreground mb-3 flex items-center gap-1.5">
+                    <Calendar className="w-3.5 h-3.5" />{b.start_date} → {b.end_date}
+                  </div>
+                )}
 
                 {b.message && <p className="text-xs text-muted-foreground bg-secondary/50 rounded-xl px-3 py-2 mb-4">{b.message}</p>}
 
