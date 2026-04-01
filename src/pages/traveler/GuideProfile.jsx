@@ -5,6 +5,7 @@ import AppShell from '@/components/layout/AppShell';
 import useCurrentUser from '@/hooks/useCurrentUser';
 import { MapPin, Star, Globe, DollarSign, Calendar } from 'lucide-react';
 import GuideDecisionPanel from '@/components/traveler/GuideDecisionPanel';
+import GuideRatingPanel from '@/components/traveler/GuideRatingPanel';
 
 export default function GuideProfilePage() {
   const { id } = useParams();
@@ -69,6 +70,7 @@ export default function GuideProfilePage() {
               <h3 className="font-semibold mb-1">Book This Guide</h3>
               <p className="text-xs text-muted-foreground mb-1">Accept to send a booking request, or reject if this guide isn't the right fit.</p>
               <GuideDecisionPanel guide={guide} user={user} />
+              <GuideRatingPanel guide={guide} user={user} />
             </div>
 
 

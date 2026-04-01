@@ -1,0 +1,20 @@
+{
+  "name": "Rating",
+  "type": "object",
+  "properties": {
+    "traveler_email": {
+      "type": "string"
+    },
+    "guide_email": {
+      "type": "string"
+    },
+    "stars": {
+      "type": "number"
+    }
+  },
+  "required": [
+    "traveler_email",
+    "guide_email",
+    "stars"
+  ]
+}
