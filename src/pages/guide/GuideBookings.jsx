@@ -32,14 +32,14 @@ export default function GuideBookings() {
     setBookings(bs => bs.map(b => b.id === id ? { ...b, status } : b));
   };
 
+  const getEffectiveStatus = (b) => {
+    if (b.status === 'rejected' || b.traveler_decision === 'rejected_by_traveler') return 'rejected';
+    return b.status;
+  };
+
   const filtered = filter === 'all'
     ? bookings
-    : bookings.filter(b => {
-        if (filter === 'rejected') {
-          return b.status === 'rejected' || b.traveler_decision === 'rejected_by_traveler';
-        }
-        return b.status === filter;
-      });
+    : bookings.filter(b => getEffectiveStatus(b) === filter);
 
   return (
     <AppShell user={user}>
@@ -82,9 +82,9 @@ export default function GuideBookings() {
                     </div>
                   </div>
                   {(() => {
-                    const isRejected = b.status === 'rejected' || b.traveler_decision === 'rejected_by_traveler';
+                    const effectiveStatus = getEffectiveStatus(b);
+                    const isRejected = effectiveStatus === 'rejected';
                     const isConfirmed = !isRejected && b.traveler_decision === 'accepted_by_traveler';
-                    const effectiveStatus = isRejected ? 'rejected' : b.status;
                     return (
                       <div className="flex flex-col items-end gap-1">
                         <span className={`text-xs px-3 py-1 rounded-full capitalize font-semibold ${
