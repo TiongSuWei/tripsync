@@ -33,7 +33,7 @@ export default function Onboard() {
         return;
       }
 
-      // Apply the role if it's new
+      // Always apply the pending role if the user explicitly selected one
       if (pendingType) {
         await base44.auth.updateMe({ account_type: pendingType });
 

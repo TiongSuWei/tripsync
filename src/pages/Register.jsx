@@ -10,20 +10,29 @@ export default function Register() {
 
   // Never auto-redirect — always show role selection first
 
+  // Auto-redirect already-authenticated users with a role straight to their dashboard
+  useEffect(() => {
+    base44.auth.isAuthenticated().then(async (authed) => {
+      if (!authed) return;
+      const me = await base44.auth.me();
+      if (me?.account_type) {
+        const dest = me.account_type === 'guide' ? '/guide' : me.role === 'admin' ? '/admin' : '/traveler';
+        window.location.href = dest;
+      }
+    });
+  }, []);
+
   const handleContinue = async () => {
     setLoading(true);
-    // Check if the user is already logged in with an existing role
+    // Always store the chosen role so Onboard applies it
+    localStorage.setItem('tripsync_register_role', role);
     const isLoggedIn = await base44.auth.isAuthenticated();
     if (isLoggedIn) {
-      const me = await base44.auth.me();
-      // If already has a role assigned, don't overwrite it — just proceed to onboard/verify
-      if (me?.account_type) {
-        window.location.href = '/onboard';
-        return;
-      }
+      // Already authenticated — go straight to onboard to apply the selected role
+      window.location.href = '/onboard';
+      return;
     }
-    // New user — store their chosen role and send to login
-    localStorage.setItem('tripsync_register_role', role);
+    // Not logged in — redirect to OAuth login, then onboard
     base44.auth.redirectToLogin('/onboard');
   };
 
