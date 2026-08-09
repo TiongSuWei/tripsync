@@ -37,3 +37,15 @@ Open [Base44.com](http://Base44.com) and click on Publish.
 Documentation: [https://docs.base44.com/Integrations/Using-GitHub](https://docs.base44.com/Integrations/Using-GitHub)
 
 Support: [https://app.base44.com/support](https://app.base44.com/support)
+
+## Week 1 Contribution
+
+- Set up the TripSync GitHub repository for team collaboration.
+- Connected the Base44 project to GitHub.
+- Configured the local development environment using Git and Visual Studio Code.
+- Created a separate branch for weekly development contributions.
+- Reviewed the TripSync project structure and source files.
+
+### Contributor
+
+Tiong Su Wei
