@@ -1,0 +1,48 @@
+{
+  "name": "Trip",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "destination": {
+      "type": "string"
+    },
+    "start_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "end_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "budget": {
+      "type": "number"
+    },
+    "travelers_count": {
+      "type": "number"
+    },
+    "preferences": {
+      "type": "string"
+    },
+    "itinerary": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "planned",
+        "completed"
+      ],
+      "default": "draft"
+    },
+    "traveler_email": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "title",
+    "destination"
+  ]
+}

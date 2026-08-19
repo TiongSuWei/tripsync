@@ -1,0 +1,61 @@
+{
+  "name": "GuideProfile",
+  "type": "object",
+  "properties": {
+    "guide_email": {
+      "type": "string"
+    },
+    "guide_name": {
+      "type": "string"
+    },
+    "bio": {
+      "type": "string"
+    },
+    "photo_url": {
+      "type": "string"
+    },
+    "location": {
+      "type": "string"
+    },
+    "languages": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "specialties": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "price_per_day": {
+      "type": "number"
+    },
+    "availability": {
+      "type": "string"
+    },
+    "rating": {
+      "type": "number"
+    },
+    "total_reviews": {
+      "type": "number"
+    },
+    "verified": {
+      "type": "boolean",
+      "default": true
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "approved",
+        "inactive"
+      ],
+      "default": "approved"
+    }
+  },
+  "required": [
+    "guide_email",
+    "guide_name"
+  ]
+}

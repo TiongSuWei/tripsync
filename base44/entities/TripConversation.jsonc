@@ -1,0 +1,45 @@
+{
+  "name": "TripConversation",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Auto-generated title for the conversation"
+    },
+    "messages": {
+      "type": "array",
+      "description": "Array of chat messages",
+      "items": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "type": "string"
+          },
+          "content": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "trip_plan": {
+      "type": "object",
+      "description": "Structured trip plan extracted from conversation"
+    },
+    "destination": {
+      "type": "string",
+      "description": "Primary destination"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "completed"
+      ],
+      "default": "active"
+    }
+  },
+  "required": []
+}

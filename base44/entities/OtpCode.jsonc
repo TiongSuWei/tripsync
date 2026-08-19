@@ -1,0 +1,28 @@
+{
+  "name": "OtpCode",
+  "type": "object",
+  "properties": {
+    "email": {
+      "type": "string",
+      "description": "The user email this OTP belongs to"
+    },
+    "code": {
+      "type": "string",
+      "description": "The 6-digit OTP code"
+    },
+    "expires_at": {
+      "type": "string",
+      "description": "ISO timestamp when the code expires"
+    },
+    "used": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the code has been used"
+    }
+  },
+  "required": [
+    "email",
+    "code",
+    "expires_at"
+  ]
+}

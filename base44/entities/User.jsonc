@@ -1,0 +1,25 @@
+{
+  "name": "User",
+  "type": "object",
+  "properties": {
+    "role": {
+      "type": "string",
+      "enum": [
+        "admin",
+        "user"
+      ],
+      "default": "user"
+    },
+    "account_type": {
+      "type": "string",
+      "enum": [
+        "traveler",
+        "guide"
+      ],
+      "description": "User's chosen account type on TripSync"
+    }
+  },
+  "required": [
+    "account_type"
+  ]
+}
