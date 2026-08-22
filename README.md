@@ -47,5 +47,15 @@ Support: [https://app.base44.com/support](https://app.base44.com/support)
 - Reviewed the TripSync project structure and source files.
 
 ### Contributor
+Tiong Su Wei
 
+## Week 2 Contribution
+
+- Standardised button sizes and clickable areas across the TripSync application.
+- Improved button usability for desktop and mobile.
+- Updated the shared button component to improve UI consistency.
+- Tested the Google Login authentication flow and confirmed it is working correctly.
+- Synced the latest Base44 changes to the Week 2 GitHub branch.
+
+### Contributor
 Tiong Su Wei
