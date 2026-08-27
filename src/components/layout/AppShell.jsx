@@ -42,6 +42,9 @@ export default function AppShell({ user, children }) {
 
   const handleLogout = () => {
     localStorage.removeItem('tripsync_register_role');
+    localStorage.removeItem('base44_access_token');
+    localStorage.removeItem('token');
+    sessionStorage.removeItem('tripsync_otp_verified');
     base44.auth.logout('/register');
   };
 
