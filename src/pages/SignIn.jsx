@@ -32,7 +32,7 @@ export default function SignIn() {
   };
 
   const handleGoogleLogin = () => {
-    base44.auth.redirectToLogin('/onboard');
+    base44.auth.loginWithProvider('google', '/onboard');
   };
 
   return (
