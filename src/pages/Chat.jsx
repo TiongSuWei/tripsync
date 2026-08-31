@@ -4,6 +4,16 @@ import AppShell from '@/components/layout/AppShell';
 import useCurrentUser from '@/hooks/useCurrentUser';
 import { Plus, MessageSquare, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import MessageBubble from '@/components/chat/MessageBubble';
 import TypingIndicator from '@/components/chat/TypingIndicator';
 import ChatInput from '@/components/chat/ChatInput';
@@ -44,6 +54,7 @@ export default function Chat() {
   const [activeConv, setActiveConv] = useState(null);
   const [messages, setMessages] = useState([]);
   const [isTyping, setIsTyping] = useState(false);
+  const [convToDelete, setConvToDelete] = useState(null);
   const messagesEndRef = useRef(null);
   const isFirstLoad = useRef(true);
 
@@ -83,6 +94,12 @@ export default function Chat() {
     await base44.entities.TripConversation.delete(id);
     setConversations(prev => prev.filter(c => c.id !== id));
     if (activeConv?.id === id) { setActiveConv(null); setMessages([]); }
+  };
+
+  const confirmDeleteConv = async () => {
+    if (!convToDelete) return;
+    await deleteConversation(convToDelete.id);
+    setConvToDelete(null);
   };
 
   const sendMessage = useCallback(async (text) => {
@@ -140,7 +157,7 @@ export default function Chat() {
                 )}>
                 <MessageSquare className="w-3.5 h-3.5 flex-shrink-0 opacity-60" />
                 <span className="flex-1 truncate">{conv.title || 'New Trip'}</span>
-                <button onClick={e => { e.stopPropagation(); deleteConversation(conv.id); }}
+                <button onClick={e => { e.stopPropagation(); setConvToDelete(conv); }}
                   className="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:text-destructive">
                   <Trash2 className="w-3 h-3" />
                 </button>
@@ -200,6 +217,26 @@ export default function Chat() {
           )}
         </div>
       </div>
+
+      <AlertDialog open={!!convToDelete} onOpenChange={(open) => !open && setConvToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this conversation?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {convToDelete ? `"${convToDelete.title || 'New Trip'}"` : 'This conversation'} and all its messages will be permanently removed. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDeleteConv}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AppShell>
   );
 }
