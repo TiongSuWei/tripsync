@@ -16,5 +16,12 @@ export default defineConfig({
       visualEditAgent: true
     }),
     react(),
-  ]
+  ],
+  resolve: {
+    // Force a single copy of React/ReactDOM so the hooks dispatcher and the
+    // renderer always share the same instance. Without this, Vite's dep
+    // optimizer can serve a stale mix of chunks and crash with
+    // "Cannot read properties of null (reading 'useState')".
+    dedupe: ['react', 'react-dom']
+  }
 });
