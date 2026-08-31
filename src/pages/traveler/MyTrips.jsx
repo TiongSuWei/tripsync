@@ -3,6 +3,16 @@ import { base44 } from '@/api/base44Client';
 import AppShell from '@/components/layout/AppShell';
 import useCurrentUser from '@/hooks/useCurrentUser';
 import { Button } from '@/components/ui/button';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { MapPin, Trash2, Eye, Plus, Calendar, DollarSign } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import TripDetailModal from '@/components/traveler/TripDetailModal';
@@ -12,6 +22,7 @@ export default function MyTrips() {
   const [trips, setTrips] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState(null);
+  const [tripToDelete, setTripToDelete] = useState(null);
 
   useEffect(() => {
     if (user) {
@@ -19,9 +30,11 @@ export default function MyTrips() {
     }
   }, [user]);
 
-  const deleteTrip = async (id) => {
-    await base44.entities.Trip.delete(id);
-    setTrips(t => t.filter(x => x.id !== id));
+  const confirmDelete = async () => {
+    if (!tripToDelete) return;
+    await base44.entities.Trip.delete(tripToDelete.id);
+    setTrips(t => t.filter(x => x.id !== tripToDelete.id));
+    setTripToDelete(null);
   };
 
   return (
@@ -74,7 +87,7 @@ export default function MyTrips() {
                   <Button variant="outline" size="sm" className="flex-1 rounded-xl gap-1.5" onClick={() => setSelected(trip)}>
                     <Eye className="w-3.5 h-3.5" />View
                   </Button>
-                  <Button variant="outline" size="sm" className="rounded-xl text-destructive hover:bg-destructive/10 hover:border-destructive/30" onClick={() => deleteTrip(trip.id)}>
+                  <Button variant="outline" size="sm" className="rounded-xl text-destructive hover:bg-destructive/10 hover:border-destructive/30" onClick={() => setTripToDelete(trip)}>
                     <Trash2 className="w-3.5 h-3.5" />
                   </Button>
                 </div>
@@ -84,6 +97,26 @@ export default function MyTrips() {
         )}
       </div>
       {selected && <TripDetailModal trip={selected} onClose={() => setSelected(null)} />}
+
+      <AlertDialog open={!!tripToDelete} onOpenChange={(open) => !open && setTripToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this trip?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {tripToDelete ? `"${tripToDelete.title}" in ${tripToDelete.destination}` : 'This trip'} will be permanently removed. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AppShell>
   );
 }
