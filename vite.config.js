@@ -17,12 +17,6 @@ export default defineConfig({
     }),
     react(),
   ],
-  server: {
-    host: true,
-    allowedHosts: true,
-    port: 5173,
-    strictPort: true,
-  },
   resolve: {
     // Force a single copy of React/ReactDOM so the hooks dispatcher and the
     // renderer always share the same instance. Without this, Vite's dep
