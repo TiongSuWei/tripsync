@@ -46,7 +46,17 @@ const AuthenticatedApp = () => {
 
   if (authError) {
     if (authError.type === 'user_not_registered') return <UserNotRegisteredError />;
-    else if (authError.type === 'auth_required') { window.location.href = '/register'; return null; }
+    else if (authError.type === 'auth_required') {
+      // If we're already on a public page, just render the routes — the public
+      // pages don't need auth, and RoleGuard redirects protected ones. Redirecting
+      // to /register when already on /register causes an infinite reload loop
+      // (the loading screen the user was stuck on).
+      const publicPaths = ['/', '/register', '/signin', '/onboard', '/verify-otp'];
+      if (!publicPaths.includes(window.location.pathname)) {
+        window.location.href = '/register';
+        return null;
+      }
+    }
   }
 
   return (
