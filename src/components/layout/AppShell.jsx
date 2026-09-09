@@ -41,17 +41,13 @@ export default function AppShell({ user, children }) {
   const items = navItems[role] || navItems.traveler;
 
   const handleLogout = () => {
-    // Clear local auth state first.
-    localStorage.removeItem('tripsync_register_role');
-    localStorage.removeItem('base44_access_token');
-    localStorage.removeItem('token');
+    // The auth token is stored in localStorage (base44_access_token), not an
+    // HTTP-only cookie, so clearing local state is sufficient. The app-params
+    // module has a built-in `clear_access_token` URL param that wipes the
+    // stored tokens on load — using it avoids the server logout endpoint,
+    // whose redirect was stalling the browser on a loading screen.
     sessionStorage.removeItem('tripsync_otp_verified');
-    // Hit the server-side logout endpoint directly with a same-origin URL.
-    // The SDK's base44.auth.logout() builds its URL from options.appBaseUrl,
-    // which is unset in this app, producing a broken "null/api/..." URL that
-    // stalls the browser on a loading screen. The server clears the HTTP-only
-    // session cookie and redirects back to /register.
-    window.location.href = `/api/apps/auth/logout?from_url=${encodeURIComponent('/register')}`;
+    window.location.href = `/register?clear_access_token=true`;
   };
 
   const SidebarContent = () => (
