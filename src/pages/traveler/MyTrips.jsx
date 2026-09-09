@@ -62,34 +62,43 @@ export default function MyTrips() {
         ) : (
           <div className="grid sm:grid-cols-2 gap-4">
             {trips.map(trip => (
-              <div key={trip.id} className="bg-card border border-border rounded-2xl p-5 hover:border-foreground/20 transition-colors">
-                <div className="flex items-start justify-between mb-3">
-                  <div>
-                    <h3 className="font-semibold mb-0.5">{trip.title}</h3>
-                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                      <MapPin className="w-3 h-3" />
-                      {trip.destination}
-                    </div>
+              <div key={trip.id} className="bg-card border border-border rounded-2xl overflow-hidden hover:border-foreground/20 transition-colors">
+                {trip.destination_image_url ? (
+                  <img src={trip.destination_image_url} alt={trip.destination} className="w-full h-32 object-cover" />
+                ) : (
+                  <div className="w-full h-32 bg-secondary flex items-center justify-center">
+                    <MapPin className="w-8 h-8 text-muted-foreground" />
                   </div>
-                  <span className={`text-xs px-2.5 py-1 rounded-full ${
-                    trip.status === 'planned' ? 'bg-secondary text-foreground' : 'bg-secondary text-muted-foreground'
-                  }`}>{trip.status}</span>
-                </div>
-                <div className="flex items-center gap-4 text-xs text-muted-foreground mb-4">
-                  {trip.start_date && (
-                    <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />{trip.start_date}</span>
-                  )}
-                  {trip.budget && (
-                    <span className="flex items-center gap-1"><DollarSign className="w-3 h-3" />${trip.budget.toLocaleString()}</span>
-                  )}
-                </div>
-                <div className="flex gap-2">
-                  <Button variant="outline" size="sm" className="flex-1 rounded-xl gap-1.5" onClick={() => setSelected(trip)}>
-                    <Eye className="w-3.5 h-3.5" />View
-                  </Button>
-                  <Button variant="outline" size="sm" className="rounded-xl text-destructive hover:bg-destructive/10 hover:border-destructive/30" onClick={() => setTripToDelete(trip)}>
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </Button>
+                )}
+                <div className="p-5">
+                  <div className="flex items-start justify-between mb-3">
+                    <div>
+                      <h3 className="font-semibold mb-0.5">{trip.title}</h3>
+                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                        <MapPin className="w-3 h-3" />
+                        {trip.destination}
+                      </div>
+                    </div>
+                    <span className={`text-xs px-2.5 py-1 rounded-full ${
+                      trip.status === 'planned' ? 'bg-secondary text-foreground' : 'bg-secondary text-muted-foreground'
+                    }`}>{trip.status}</span>
+                  </div>
+                  <div className="flex items-center gap-4 text-xs text-muted-foreground mb-4">
+                    {trip.start_date && (
+                      <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />{trip.start_date}</span>
+                    )}
+                    {trip.budget && (
+                      <span className="flex items-center gap-1"><DollarSign className="w-3 h-3" />${trip.budget.toLocaleString()}</span>
+                    )}
+                  </div>
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm" className="flex-1 rounded-xl gap-1.5" onClick={() => setSelected(trip)}>
+                      <Eye className="w-3.5 h-3.5" />View
+                    </Button>
+                    <Button variant="outline" size="sm" className="rounded-xl text-destructive hover:bg-destructive/10 hover:border-destructive/30" onClick={() => setTripToDelete(trip)}>
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </Button>
+                  </div>
                 </div>
               </div>
             ))}

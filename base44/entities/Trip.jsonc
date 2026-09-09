@@ -28,6 +28,10 @@
     "itinerary": {
       "type": "string"
     },
+    "destination_image_url": {
+      "type": "string",
+      "description": "AI-generated preview image of the destination"
+    },
     "status": {
       "type": "string",
       "enum": [

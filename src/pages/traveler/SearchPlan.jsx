@@ -13,12 +13,14 @@ export default function SearchPlan() {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [destinationImageUrl, setDestinationImageUrl] = useState(null);
 
   const handleGenerate = async () => {
     if (!form.destination) return;
     setLoading(true);
     setItinerary('');
     setSaved(false);
+    setDestinationImageUrl(null);
     const prompt = `You are TripSync AI. Generate a complete, detailed travel plan for:
 - Destination: ${form.destination}
 - Dates: ${form.startDate || 'flexible'} to ${form.endDate || 'flexible'}
@@ -29,8 +31,14 @@ export default function SearchPlan() {
 Include REAL hotels with booking links, real restaurants with links, real attractions with links.
 Format using markdown with: ## ✈️ Trip Summary, ## 🏨 Accommodation (real hotels with [Name](URL)), ## 🍽️ Food & Restaurants, ## 🎭 Attractions, ## 💰 Budget Breakdown, ## 📅 Day-by-Day Itinerary (every place hyperlinked).`;
 
-    const result = await base44.integrations.Core.InvokeLLM({ prompt });
+    const [result, imageResult] = await Promise.all([
+      base44.integrations.Core.InvokeLLM({ prompt }),
+      base44.integrations.Core.GenerateImage({
+        prompt: `A beautiful, vibrant, high-quality travel photo of ${form.destination}, scenic, travel magazine style`,
+      }),
+    ]);
     setItinerary(typeof result === 'string' ? result : JSON.stringify(result));
+    if (imageResult?.url) setDestinationImageUrl(imageResult.url);
     setLoading(false);
   };
 
@@ -46,6 +54,7 @@ Format using markdown with: ## ✈️ Trip Summary, ## 🏨 Accommodation (real 
       travelers_count: parseInt(form.travelers),
       preferences: form.preferences,
       itinerary,
+      destination_image_url: destinationImageUrl,
       status: 'planned',
       traveler_email: user.email,
     });
@@ -113,6 +122,9 @@ Format using markdown with: ## ✈️ Trip Summary, ## 🏨 Accommodation (real 
         {/* Results */}
         {itinerary && (
           <div className="bg-card border border-border rounded-2xl p-6">
+            {destinationImageUrl && (
+              <img src={destinationImageUrl} alt={form.destination} className="w-full h-48 object-cover rounded-xl mb-4" />
+            )}
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-semibold">Your Travel Plan</h2>
               <Button onClick={handleSave} disabled={saving || saved} variant="outline" size="sm" className="rounded-xl gap-2">

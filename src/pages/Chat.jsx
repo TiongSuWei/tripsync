@@ -40,6 +40,7 @@ Rules:
 12. STAY ON TOPIC: You are strictly a travel-planning assistant, nothing else. If the user says something with no connection at all to travel, trips, destinations, bookings, or their itinerary (small talk like "how are you", general knowledge questions, personal questions, random topics, jokes unrelated to travel, etc.), do NOT answer or engage with that topic. Instead, reply with ONE short, funny, in-character line that playfully says it's beyond your scope as a travel planner, then immediately steer back to their trip with a relevant follow-up question. Keep it brief and witty, never robotic or preachy, and never break character to explain that you are an AI or that you are following a rule. Vary the joke each time rather than reusing the same line. Example tone only (do not reuse verbatim): "Ha, that one's above my pay grade — I only do flights, hotels, and questionable food recommendations. Speaking of which, how's the food scene looking for your trip so far?"
 
 Output format when generating a full plan:
+**Destination:** <destination name>
 ## ✈️ Trip Summary
 ## 🏨 Accommodation Recommendations
 ## 🍽️ Food & Restaurants
@@ -124,14 +125,26 @@ export default function Chat() {
     setIsTyping(false);
     let newTitle = activeConv.title;
     let destination = activeConv.destination;
+    let destinationImageUrl = activeConv.destination_image_url;
     if (activeConv.title === 'New Trip' && updatedMessages.filter(m => m.role === 'user').length === 1) {
       newTitle = text.length > 40 ? text.slice(0, 40) + '…' : text;
       const destMatch = text.match(/(?:to|in|visit|going to|trip to)\s+([A-Z][a-zA-Z\s]+?)(?:\s+for|\s+in|\s+from|,|$)/i);
       if (destMatch) destination = destMatch[1].trim();
     }
-    await base44.entities.TripConversation.update(activeConv.id, { messages: finalMessages, title: newTitle, destination, status: 'active' });
-    setActiveConv(prev => ({ ...prev, title: newTitle, destination }));
-    setConversations(prev => prev.map(c => c.id === activeConv.id ? { ...c, title: newTitle, destination, messages: finalMessages } : c));
+    // Generate a destination preview image when the AI produces a full itinerary
+    const destLineMatch = assistantMsg.content.match(/\*\*Destination:\*\*\s*(.+)/i);
+    if (destLineMatch && !destinationImageUrl) {
+      const destName = destLineMatch[1].trim();
+      try {
+        const imageResult = await base44.integrations.Core.GenerateImage({
+          prompt: `A beautiful, vibrant, high-quality travel photo of ${destName}, scenic, travel magazine style`,
+        });
+        if (imageResult?.url) destinationImageUrl = imageResult.url;
+      } catch (e) { /* image generation failure shouldn't break chat */ }
+    }
+    await base44.entities.TripConversation.update(activeConv.id, { messages: finalMessages, title: newTitle, destination, destination_image_url: destinationImageUrl, status: 'active' });
+    setActiveConv(prev => ({ ...prev, title: newTitle, destination, destination_image_url: destinationImageUrl }));
+    setConversations(prev => prev.map(c => c.id === activeConv.id ? { ...c, title: newTitle, destination, destination_image_url: destinationImageUrl, messages: finalMessages } : c));
   }, [activeConv, messages]);
 
   const isEmpty = messages.length === 0;
@@ -198,6 +211,9 @@ export default function Chat() {
               </div>
             ) : (
               <>
+                {activeConv?.destination_image_url && (
+                  <img src={activeConv.destination_image_url} alt={activeConv.destination || 'Destination'} className="w-full h-32 object-cover rounded-xl border border-border" />
+                )}
                 {messages.map((msg, i) => <MessageBubble key={i} message={msg} />)}
                 {isTyping && <TypingIndicator />}
               </>
