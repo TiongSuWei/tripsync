@@ -2,6 +2,8 @@ import ReactMarkdown from 'react-markdown';
 
 export default function MessageBubble({ message }) {
   const isUser = message.role === 'user';
+  const imageMap = {};
+  if (message.images) message.images.forEach(img => { imageMap[img.place] = img.url; });
 
   return (
     <div className={`flex items-start gap-3 chat-message-enter ${isUser ? 'flex-row-reverse' : ''}`}>
@@ -42,20 +44,22 @@ export default function MessageBubble({ message }) {
                     {children}
                   </blockquote>
                 ),
+                a: ({ href, children }) => {
+                  const linkText = typeof children === 'string' ? children : (Array.isArray(children) ? children.join('') : '');
+                  const imgUrl = imageMap[linkText];
+                  return (
+                    <>
+                      <a href={href} target="_blank" rel="noopener noreferrer" className="text-primary underline underline-offset-2 hover:opacity-70">{children}</a>
+                      {imgUrl && (
+                        <img src={imgUrl} alt={linkText} className="block w-full max-w-[240px] h-28 object-cover rounded-lg my-2" />
+                      )}
+                    </>
+                  );
+                },
               }}
             >
               {message.content}
             </ReactMarkdown>
-            {message.images?.length > 0 && (
-              <div className="grid grid-cols-3 gap-2 mt-3">
-                {message.images.map((img, i) => (
-                  <div key={i} className="relative rounded-lg overflow-hidden">
-                    <img src={img.url} alt={img.place} className="w-full h-20 object-cover" />
-                    <span className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-xs px-1.5 py-0.5 truncate">{img.place}</span>
-                  </div>
-                ))}
-              </div>
-            )}
             </>
           )}
         </div>
