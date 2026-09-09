@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -8,6 +9,7 @@ const REMEMBER_EMAIL_KEY = 'tripsync_remember_email';
 const REMEMBER_PASSWORD_KEY = 'tripsync_remember_password';
 
 export default function SignIn() {
+  const navigate = useNavigate();
   const [email, setEmail] = useState(() => localStorage.getItem(REMEMBER_EMAIL_KEY) || '');
   const [password, setPassword] = useState(() => localStorage.getItem(REMEMBER_PASSWORD_KEY) || '');
   const [rememberMe, setRememberMe] = useState(() => !!localStorage.getItem(REMEMBER_EMAIL_KEY));
@@ -36,8 +38,11 @@ export default function SignIn() {
         localStorage.removeItem(REMEMBER_PASSWORD_KEY);
       }
       await base44.auth.loginViaEmailPassword(email.trim(), password);
-      // Credentials verified — proceed to onboard (applies role + sends OTP)
-      window.location.href = '/onboard';
+      // Credentials verified — proceed to onboard via SPA navigation so the
+      // SDK's in-memory auth token is preserved (a full page reload can lose
+      // it before the token is persisted to localStorage, causing the Onboard
+      // page's function invocation to fail with "must be logged in").
+      navigate('/onboard', { replace: true });
     } catch (err) {
       setError(err?.response?.data?.message || err?.message || 'Incorrect email or password. Please try again.');
       setLoading(false);
