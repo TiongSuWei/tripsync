@@ -24,6 +24,7 @@ export default function MessageBubble({ message }) {
           {isUser ? (
             <p>{message.content}</p>
           ) : (
+            <>
             <ReactMarkdown
               className="prose prose-sm max-w-none prose-headings:font-semibold prose-headings:text-foreground prose-p:text-foreground prose-strong:text-foreground prose-li:text-foreground prose-a:text-primary"
               components={{
@@ -45,6 +46,17 @@ export default function MessageBubble({ message }) {
             >
               {message.content}
             </ReactMarkdown>
+            {message.images?.length > 0 && (
+              <div className="grid grid-cols-3 gap-2 mt-3">
+                {message.images.map((img, i) => (
+                  <div key={i} className="relative rounded-lg overflow-hidden">
+                    <img src={img.url} alt={img.place} className="w-full h-20 object-cover" />
+                    <span className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-xs px-1.5 py-0.5 truncate">{img.place}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+            </>
           )}
         </div>
         <span className="text-xs text-muted-foreground px-1">

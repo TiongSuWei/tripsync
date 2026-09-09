@@ -20,6 +20,21 @@
           },
           "timestamp": {
             "type": "string"
+          },
+          "images": {
+            "type": "array",
+            "description": "AI-generated images for places mentioned in this message",
+            "items": {
+              "type": "object",
+              "properties": {
+                "place": {
+                  "type": "string"
+                },
+                "url": {
+                  "type": "string"
+                }
+              }
+            }
           }
         }
       }

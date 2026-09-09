@@ -20,6 +20,7 @@ import ChatInput from '@/components/chat/ChatInput';
 import SuggestionChips from '@/components/chat/SuggestionChips';
 import ExportButton from '@/components/chat/ExportButton';
 import { cn } from '@/lib/utils';
+import { generatePlaceImages } from '@/lib/placeImages';
 
 const SYSTEM_PROMPT = `You are TripSync, an intelligent AI travel assistant and professional tour guide. Help users plan complete trips efficiently.
 
@@ -120,8 +121,8 @@ export default function Chat() {
       content: typeof response === 'string' ? response : JSON.stringify(response),
       timestamp: new Date().toISOString()
     };
-    const finalMessages = [...updatedMessages, assistantMsg];
-    setMessages(finalMessages);
+    const initialFinalMessages = [...updatedMessages, assistantMsg];
+    setMessages(initialFinalMessages);
     setIsTyping(false);
     let newTitle = activeConv.title;
     let destination = activeConv.destination;
@@ -142,6 +143,14 @@ export default function Chat() {
         if (imageResult?.url) destinationImageUrl = imageResult.url;
       } catch (e) { /* image generation failure shouldn't break chat */ }
     }
+    // Generate place images for the itinerary
+    let placeImages = [];
+    if (destLineMatch) {
+      placeImages = await generatePlaceImages(assistantMsg.content);
+    }
+    const finalMsg = placeImages.length > 0 ? { ...assistantMsg, images: placeImages } : assistantMsg;
+    const finalMessages = [...updatedMessages, finalMsg];
+    if (placeImages.length > 0) setMessages(finalMessages);
     await base44.entities.TripConversation.update(activeConv.id, { messages: finalMessages, title: newTitle, destination, destination_image_url: destinationImageUrl, status: 'active' });
     setActiveConv(prev => ({ ...prev, title: newTitle, destination, destination_image_url: destinationImageUrl }));
     setConversations(prev => prev.map(c => c.id === activeConv.id ? { ...c, title: newTitle, destination, destination_image_url: destinationImageUrl, messages: finalMessages } : c));

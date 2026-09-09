@@ -5,6 +5,7 @@ import useCurrentUser from '@/hooks/useCurrentUser';
 import { Button } from '@/components/ui/button';
 import { Search, Loader2, Save, MapPin } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
+import { generatePlaceImages } from '@/lib/placeImages';
 
 export default function SearchPlan() {
   const { user } = useCurrentUser();
@@ -14,6 +15,7 @@ export default function SearchPlan() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [destinationImageUrl, setDestinationImageUrl] = useState(null);
+  const [placeImages, setPlaceImages] = useState([]);
 
   const handleGenerate = async () => {
     if (!form.destination) return;
@@ -21,6 +23,7 @@ export default function SearchPlan() {
     setItinerary('');
     setSaved(false);
     setDestinationImageUrl(null);
+    setPlaceImages([]);
     const prompt = `You are TripSync AI. Generate a complete, detailed travel plan for:
 - Destination: ${form.destination}
 - Dates: ${form.startDate || 'flexible'} to ${form.endDate || 'flexible'}
@@ -37,8 +40,10 @@ Format using markdown with: ## ✈️ Trip Summary, ## 🏨 Accommodation (real 
         prompt: `A beautiful, vibrant, high-quality travel photo of ${form.destination}, scenic, travel magazine style`,
       }),
     ]);
-    setItinerary(typeof result === 'string' ? result : JSON.stringify(result));
+    const itineraryText = typeof result === 'string' ? result : JSON.stringify(result);
+    setItinerary(itineraryText);
     if (imageResult?.url) setDestinationImageUrl(imageResult.url);
+    setPlaceImages(await generatePlaceImages(itineraryText));
     setLoading(false);
   };
 
@@ -124,6 +129,16 @@ Format using markdown with: ## ✈️ Trip Summary, ## 🏨 Accommodation (real 
           <div className="bg-card border border-border rounded-2xl p-6">
             {destinationImageUrl && (
               <img src={destinationImageUrl} alt={form.destination} className="w-full h-48 object-cover rounded-xl mb-4" />
+            )}
+            {placeImages.length > 0 && (
+              <div className="grid grid-cols-3 gap-2 mb-4">
+                {placeImages.map((img, i) => (
+                  <div key={i} className="relative rounded-xl overflow-hidden">
+                    <img src={img.url} alt={img.place} className="w-full h-24 object-cover" />
+                    <span className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-xs px-1.5 py-1 truncate">{img.place}</span>
+                  </div>
+                ))}
+              </div>
             )}
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-semibold">Your Travel Plan</h2>
