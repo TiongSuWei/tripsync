@@ -220,9 +220,6 @@ export default function Chat() {
               </div>
             ) : (
               <>
-                {activeConv?.destination_image_url && (
-                  <img src={activeConv.destination_image_url} alt={activeConv.destination || 'Destination'} className="w-full h-32 object-cover rounded-xl border border-border" />
-                )}
                 {messages.map((msg, i) => <MessageBubble key={i} message={msg} />)}
                 {isTyping && <TypingIndicator />}
               </>
