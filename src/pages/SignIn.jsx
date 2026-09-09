@@ -1,11 +1,16 @@
 import { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { MapPin, Loader2, Eye, EyeOff } from 'lucide-react';
 
+const REMEMBER_EMAIL_KEY = 'tripsync_remember_email';
+const REMEMBER_PASSWORD_KEY = 'tripsync_remember_password';
+
 export default function SignIn() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState(() => localStorage.getItem(REMEMBER_EMAIL_KEY) || '');
+  const [password, setPassword] = useState(() => localStorage.getItem(REMEMBER_PASSWORD_KEY) || '');
+  const [rememberMe, setRememberMe] = useState(() => !!localStorage.getItem(REMEMBER_EMAIL_KEY));
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -22,6 +27,14 @@ export default function SignIn() {
     setLoading(true);
     setError('');
     try {
+      // Persist or clear credentials based on the Remember me checkbox
+      if (rememberMe) {
+        localStorage.setItem(REMEMBER_EMAIL_KEY, email.trim());
+        localStorage.setItem(REMEMBER_PASSWORD_KEY, password);
+      } else {
+        localStorage.removeItem(REMEMBER_EMAIL_KEY);
+        localStorage.removeItem(REMEMBER_PASSWORD_KEY);
+      }
       await base44.auth.loginViaEmailPassword(email.trim(), password);
       // Credentials verified — proceed to onboard (applies role + sends OTP)
       window.location.href = '/onboard';
@@ -107,6 +120,14 @@ export default function SignIn() {
                 {error}
               </div>
             )}
+
+            <label className="flex items-center gap-2 cursor-pointer select-none">
+              <Checkbox
+                checked={rememberMe}
+                onCheckedChange={(checked) => setRememberMe(checked === true)}
+              />
+              <span className="text-sm text-muted-foreground">Remember me</span>
+            </label>
 
             <Button
               type="submit"
