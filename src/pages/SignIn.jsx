@@ -29,14 +29,9 @@ export default function SignIn() {
     setLoading(true);
     setError('');
     try {
-      // Persist or clear credentials based on the Remember me checkbox
-      if (rememberMe) {
-        localStorage.setItem(REMEMBER_EMAIL_KEY, email.trim());
-        localStorage.setItem(REMEMBER_PASSWORD_KEY, password);
-      } else {
-        localStorage.removeItem(REMEMBER_EMAIL_KEY);
-        localStorage.removeItem(REMEMBER_PASSWORD_KEY);
-      }
+      // Always persist credentials so the form is pre-filled next visit
+      localStorage.setItem(REMEMBER_EMAIL_KEY, email.trim());
+      localStorage.setItem(REMEMBER_PASSWORD_KEY, password);
       await base44.auth.loginViaEmailPassword(email.trim(), password);
       // Credentials verified — proceed to onboard via SPA navigation so the
       // SDK's in-memory auth token is preserved (a full page reload can lose
