@@ -4,23 +4,38 @@ import { base44 } from '@/api/base44Client';
 import AppShell from '@/components/layout/AppShell';
 import useCurrentUser from '@/hooks/useCurrentUser';
 import { Button } from '@/components/ui/button';
-import { Search, BookOpen, Compass, ArrowRight, MapPin } from 'lucide-react';
+import { Search, BookOpen, Compass, ArrowRight, MapPin, Calendar, Wallet, TrendingUp, Sparkles } from 'lucide-react';
+
+const INSPIRATION = [
+  { destination: 'Tokyo', emoji: '🗼', gradient: 'from-rose-500/80 to-orange-500/80', blurb: 'Neon nights & ancient temples' },
+  { destination: 'Paris', emoji: '🗼', gradient: 'from-indigo-500/80 to-purple-500/80', blurb: 'Romance & timeless elegance' },
+  { destination: 'Bali', emoji: '🌴', gradient: 'from-emerald-500/80 to-teal-500/80', blurb: 'Beaches, rice terraces & serenity' },
+  { destination: 'New York', emoji: '🗽', gradient: 'from-sky-500/80 to-blue-600/80', blurb: 'The city that never sleeps' },
+];
 
 export default function TravelerDashboard() {
   const { user, loading } = useCurrentUser();
   const [trips, setTrips] = useState([]);
+  const [bookings, setBookings] = useState([]);
 
   useEffect(() => {
     if (user) {
       base44.entities.Trip.filter({ traveler_email: user.email }, '-created_date', 5).then(setTrips);
+      base44.entities.Booking.filter({ traveler_email: user.email }, '-created_date', 50).then(setBookings);
     }
   }, [user]);
 
   if (loading) return <div className="flex h-screen items-center justify-center"><div className="w-8 h-8 border-4 border-border border-t-foreground rounded-full animate-spin" /></div>;
 
+  const completedTrips = trips.filter(t => t.status === 'completed').length;
+  const totalBudget = trips.reduce((sum, t) => sum + (t.budget || 0), 0);
+  const pendingBookings = bookings.filter(b => b.status === 'pending').length;
+
   const stats = [
-    { label: 'My Trips', value: trips.length, icon: BookOpen, path: '/trips' },
-    { label: 'AI Chats', value: '∞', icon: Compass, path: '/chat' },
+    { label: 'My Trips', value: trips.length, sub: `${completedTrips} completed`, icon: BookOpen, path: '/trips' },
+    { label: 'Bookings', value: bookings.length, sub: `${pendingBookings} pending`, icon: Calendar, path: '/bookings' },
+    { label: 'Total Budget', value: `$${totalBudget.toLocaleString()}`, sub: 'across all trips', icon: Wallet, path: '/trips' },
+    { label: 'AI Chats', value: '∞', sub: 'unlimited planning', icon: Compass, path: '/chat' },
   ];
 
   return (
@@ -32,6 +47,33 @@ export default function TravelerDashboard() {
             Welcome back{user?.full_name ? `, ${user.full_name.split(' ')[0]}` : ''} 👋
           </h1>
           <p className="text-muted-foreground">Where are you headed next?</p>
+        </div>
+
+        {/* Hero banner */}
+        <div className="relative overflow-hidden rounded-2xl mb-8 group">
+          <div className="absolute inset-0 bg-gradient-to-br from-foreground via-foreground/90 to-foreground/70" />
+          <img
+            src="https://images.unsplash.com/photo-1488646953012-85cb498fae4c?w=1200&q=80"
+            alt="Travel inspiration"
+            className="absolute inset-0 w-full h-full object-cover opacity-30 group-hover:opacity-40 transition-opacity duration-500"
+          />
+          <div className="relative p-8 sm:p-10">
+            <div className="flex items-center gap-2 mb-3 text-background/70">
+              <Sparkles className="w-4 h-4" />
+              <span className="text-xs font-medium uppercase tracking-wider">AI-Powered Planning</span>
+            </div>
+            <h2 className="font-playfair text-2xl sm:text-3xl font-bold text-background mb-2 max-w-lg">
+              Your next adventure is one conversation away
+            </h2>
+            <p className="text-background/60 text-sm mb-5 max-w-md">
+              Tell our AI where you want to go — get a complete day-by-day itinerary with real hotels, restaurants, and a budget breakdown in seconds.
+            </p>
+            <Link to="/search">
+              <Button className="rounded-xl gap-2">
+                <Search className="w-4 h-4" /> Start Planning
+              </Button>
+            </Link>
+          </div>
         </div>
 
         {/* Quick actions */}
@@ -54,11 +96,17 @@ export default function TravelerDashboard() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 gap-4 mb-8">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           {stats.map(s => (
-            <Link key={s.label} to={s.path} className="bg-card border border-border rounded-2xl p-5 hover:border-foreground/20 transition-colors">
-              <p className="text-3xl font-bold font-playfair mb-1">{s.value}</p>
+            <Link key={s.label} to={s.path} className="bg-card border border-border rounded-2xl p-5 hover:border-foreground/20 transition-colors group">
+              <div className="flex items-center justify-between mb-3">
+                <div className="w-9 h-9 rounded-xl bg-secondary flex items-center justify-center group-hover:bg-foreground/10 transition-colors">
+                  <s.icon className="w-4 h-4" />
+                </div>
+              </div>
+              <p className="text-2xl font-bold font-playfair mb-0.5">{s.value}</p>
               <p className="text-sm text-muted-foreground">{s.label}</p>
+              <p className="text-xs text-muted-foreground/60 mt-0.5">{s.sub}</p>
             </Link>
           ))}
         </div>
@@ -66,42 +114,103 @@ export default function TravelerDashboard() {
         {/* Recent trips */}
         <div className="bg-card border border-border rounded-2xl p-6 mb-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="font-semibold">Recent Trips</h2>
+            <h2 className="font-semibold flex items-center gap-2">
+              <TrendingUp className="w-4 h-4" /> Recent Trips
+            </h2>
             <Link to="/trips" className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1">
               View all <ArrowRight className="w-3 h-3" />
             </Link>
           </div>
           {trips.length === 0 ? (
-            <div className="text-center py-8">
+            <div className="text-center py-10">
+              <div className="w-12 h-12 rounded-2xl bg-secondary flex items-center justify-center mx-auto mb-3">
+                <MapPin className="w-5 h-5 text-muted-foreground" />
+              </div>
               <p className="text-muted-foreground text-sm mb-3">No trips yet — start planning!</p>
               <Link to="/search"><Button size="sm" className="rounded-xl">Plan Your First Trip</Button></Link>
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {trips.map(trip => (
-                <div key={trip.id} className="flex items-center justify-between py-3 border-b border-border last:border-0">
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-secondary flex items-center justify-center">
-                      <MapPin className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <p className="font-medium text-sm">{trip.title}</p>
-                      <p className="text-xs text-muted-foreground">{trip.destination}</p>
+                <Link key={trip.id} to="/trips" className="group flex gap-4 p-3 rounded-xl hover:bg-secondary/50 transition-colors">
+                  <div className="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0 bg-secondary">
+                    {trip.destination_image_url ? (
+                      <img src={trip.destination_image_url} alt={trip.destination} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <MapPin className="w-6 h-6 text-muted-foreground" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0 flex flex-col justify-center">
+                    <p className="font-medium text-sm truncate">{trip.title}</p>
+                    <p className="text-xs text-muted-foreground flex items-center gap-1 mb-1.5">
+                      <MapPin className="w-3 h-3" /> {trip.destination}
+                    </p>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {trip.start_date && (
+                        <span className="text-xs text-muted-foreground flex items-center gap-1">
+                          <Calendar className="w-3 h-3" /> {new Date(trip.start_date).toLocaleDateString('en', { month: 'short', day: 'numeric' })}
+                        </span>
+                      )}
+                      {trip.budget && (
+                        <span className="text-xs text-muted-foreground flex items-center gap-1">
+                          <Wallet className="w-3 h-3" /> ${trip.budget.toLocaleString()}
+                        </span>
+                      )}
+                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                        trip.status === 'planned' ? 'bg-foreground/10 text-foreground' :
+                        trip.status === 'completed' ? 'bg-secondary text-muted-foreground' :
+                        'bg-secondary text-muted-foreground'
+                      }`}>{trip.status}</span>
                     </div>
                   </div>
-                  <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${
-                    trip.status === 'planned' ? 'bg-secondary text-foreground' :
-                    trip.status === 'completed' ? 'bg-secondary text-muted-foreground' :
-                    'bg-secondary text-muted-foreground'
-                  }`}>{trip.status}</span>
-                </div>
+                </Link>
               ))}
             </div>
           )}
         </div>
 
+        {/* Inspiration */}
+        <div className="mb-2">
+          <h2 className="font-semibold mb-4 flex items-center gap-2">
+            <Sparkles className="w-4 h-4" /> Need Inspiration?
+          </h2>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            {INSPIRATION.map(dest => (
+              <Link
+                key={dest.destination}
+                to="/search"
+                className="group relative overflow-hidden rounded-2xl aspect-[4/5] hover:scale-[1.02] transition-transform duration-300"
+              >
+                <div className={`absolute inset-0 bg-gradient-to-br ${dest.gradient}`} />
+                <img
+                  src={`https://images.unsplash.com/photo-${getUnsplashId(dest.destination)}?w=400&q=80`}
+                  alt={dest.destination}
+                  className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-50 transition-opacity"
+                  onError={(e) => { e.target.style.display = 'none'; }}
+                />
+                <div className="relative h-full flex flex-col justify-end p-4">
+                  <p className="text-2xl mb-1">{dest.emoji}</p>
+                  <p className="font-playfair font-bold text-lg text-white">{dest.destination}</p>
+                  <p className="text-xs text-white/70">{dest.blurb}</p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
 
       </div>
     </AppShell>
   );
+}
+
+function getUnsplashId(dest) {
+  const ids = {
+    Tokyo: '1540959733332-eab4ce0d0ba0',
+    Paris: '1502602898656-374d5632b8c5',
+    Bali: '1537996194471-e767a45c2bf9',
+    'New York': '1496442226668-1ba312d56f36',
+  };
+  return ids[dest] || '1488646953012-85cb498fae4c';
 }
