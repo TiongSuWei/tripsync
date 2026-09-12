@@ -6,13 +6,6 @@ import useCurrentUser from '@/hooks/useCurrentUser';
 import { Button } from '@/components/ui/button';
 import { Search, BookOpen, Compass, ArrowRight, MapPin, Calendar, Wallet, TrendingUp, Sparkles } from 'lucide-react';
 
-const INSPIRATION = [
-  { destination: 'Tokyo', emoji: '🗼', gradient: 'from-rose-500/80 to-orange-500/80', blurb: 'Neon nights & ancient temples' },
-  { destination: 'Paris', emoji: '🗼', gradient: 'from-indigo-500/80 to-purple-500/80', blurb: 'Romance & timeless elegance' },
-  { destination: 'Bali', emoji: '🌴', gradient: 'from-emerald-500/80 to-teal-500/80', blurb: 'Beaches, rice terraces & serenity' },
-  { destination: 'New York', emoji: '🗽', gradient: 'from-sky-500/80 to-blue-600/80', blurb: 'The city that never sleeps' },
-];
-
 export default function TravelerDashboard() {
   const { user, loading } = useCurrentUser();
   const [trips, setTrips] = useState([]);
@@ -171,46 +164,7 @@ export default function TravelerDashboard() {
           )}
         </div>
 
-        {/* Inspiration */}
-        <div className="mb-2">
-          <h2 className="font-semibold mb-4 flex items-center gap-2">
-            <Sparkles className="w-4 h-4" /> Need Inspiration?
-          </h2>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            {INSPIRATION.map(dest => (
-              <Link
-                key={dest.destination}
-                to="/search"
-                className="group relative overflow-hidden rounded-2xl aspect-[4/5] hover:scale-[1.02] transition-transform duration-300"
-              >
-                <div className={`absolute inset-0 bg-gradient-to-br ${dest.gradient}`} />
-                <img
-                  src={`https://images.unsplash.com/photo-${getUnsplashId(dest.destination)}?w=400&q=80`}
-                  alt={dest.destination}
-                  className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-50 transition-opacity"
-                  onError={(e) => { e.target.style.display = 'none'; }}
-                />
-                <div className="relative h-full flex flex-col justify-end p-4">
-                  <p className="text-2xl mb-1">{dest.emoji}</p>
-                  <p className="font-playfair font-bold text-lg text-white">{dest.destination}</p>
-                  <p className="text-xs text-white/70">{dest.blurb}</p>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-
       </div>
     </AppShell>
   );
-}
-
-function getUnsplashId(dest) {
-  const ids = {
-    Tokyo: '1540959733332-eab4ce0d0ba0',
-    Paris: '1502602898656-374d5632b8c5',
-    Bali: '1537996194471-e767a45c2bf9',
-    'New York': '1496442226668-1ba312d56f36',
-  };
-  return ids[dest] || '1488646953012-85cb498fae4c';
 }
