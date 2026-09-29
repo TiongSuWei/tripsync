@@ -10,6 +10,8 @@ const REMEMBER_PASSWORD_KEY = 'tripsync_remember_password';
 
 export default function SignIn() {
   const navigate = useNavigate();
+  const [mode, setMode] = useState('signin'); // 'signin' | 'signup'
+  const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState(() => localStorage.getItem(REMEMBER_EMAIL_KEY) || '');
   const [password, setPassword] = useState(() => localStorage.getItem(REMEMBER_PASSWORD_KEY) || '');
   const [rememberMe, setRememberMe] = useState(() => !!localStorage.getItem(REMEMBER_EMAIL_KEY));
@@ -19,27 +21,38 @@ export default function SignIn() {
 
   const role = localStorage.getItem('tripsync_register_role') || 'traveler';
   const roleLabel = role === 'guide' ? 'Tour Guide' : 'Traveller';
+  const isSignUp = mode === 'signup';
 
-  const handleLogin = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!email || !password) {
       setError('Please enter your email and password.');
       return;
     }
+    if (isSignUp && !fullName.trim()) {
+      setError('Please enter your full name.');
+      return;
+    }
     setLoading(true);
     setError('');
     try {
-      // Always persist credentials so the form is pre-filled next visit
-      localStorage.setItem(REMEMBER_EMAIL_KEY, email.trim());
-      localStorage.setItem(REMEMBER_PASSWORD_KEY, password);
-      await base44.auth.loginViaEmailPassword(email.trim(), password);
-      // Credentials verified — proceed to onboard via SPA navigation so the
-      // SDK's in-memory auth token is preserved (a full page reload can lose
-      // it before the token is persisted to localStorage, causing the Onboard
-      // page's function invocation to fail with "must be logged in").
+      if (isSignUp) {
+        await base44.auth.signUpViaEmailPassword(email.trim(), password, fullName.trim());
+      } else {
+        // Always persist credentials so the form is pre-filled next visit
+        localStorage.setItem(REMEMBER_EMAIL_KEY, email.trim());
+        localStorage.setItem(REMEMBER_PASSWORD_KEY, password);
+        await base44.auth.loginViaEmailPassword(email.trim(), password);
+      }
+      // Proceed to onboard via SPA navigation so the SDK's in-memory auth token
+      // is preserved.
       navigate('/onboard', { replace: true });
     } catch (err) {
-      setError(err?.response?.data?.message || err?.message || 'Incorrect email or password. Please try again.');
+      setError(
+        err?.response?.data?.message ||
+        err?.message ||
+        (isSignUp ? 'Could not create your account. Please try again.' : 'Incorrect email or password. Please try again.')
+      );
       setLoading(false);
     }
   };
@@ -58,10 +71,10 @@ export default function SignIn() {
         </div>
         <div>
           <h2 className="font-playfair text-5xl font-bold leading-tight mb-6">
-            Welcome back<br />to TripSync.
+            {isSignUp ? <>Join the<br />TripSync community.</> : <>Welcome back<br />to TripSync.</>}
           </h2>
           <p className="text-background/60 text-lg">
-            Sign in to continue as a {roleLabel}.
+            {isSignUp ? `Create an account to start as a ${roleLabel}.` : `Sign in to continue as a ${roleLabel}.`}
           </p>
         </div>
         <p className="text-background/30 text-sm">© {new Date().getFullYear()} TripSync</p>
@@ -76,12 +89,25 @@ export default function SignIn() {
             <span className="font-playfair font-bold text-xl">TripSync</span>
           </div>
 
-          <h1 className="font-playfair text-3xl font-bold mb-2">Sign in</h1>
+          <h1 className="font-playfair text-3xl font-bold mb-2">{isSignUp ? 'Create account' : 'Sign in'}</h1>
           <p className="text-muted-foreground mb-8">
-            Continuing as <span className="font-medium text-foreground">{roleLabel}</span>
+            {isSignUp ? 'New here? Join as a ' : 'Continuing as '}<span className="font-medium text-foreground">{roleLabel}</span>
           </p>
 
-          <form onSubmit={handleLogin} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {isSignUp && (
+              <div>
+                <label className="text-sm font-medium mb-1.5 block">Full name</label>
+                <input
+                  type="text"
+                  value={fullName}
+                  onChange={e => setFullName(e.target.value)}
+                  placeholder="Jane Doe"
+                  autoComplete="name"
+                  className="w-full px-4 py-2.5 bg-card border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-foreground/20"
+                />
+              </div>
+            )}
             <div>
               <label className="text-sm font-medium mb-1.5 block">Email</label>
               <input
@@ -121,13 +147,15 @@ export default function SignIn() {
               </div>
             )}
 
-            <label className="flex items-center gap-2 cursor-pointer select-none">
-              <Checkbox
-                checked={rememberMe}
-                onCheckedChange={(checked) => setRememberMe(checked === true)}
-              />
-              <span className="text-sm text-muted-foreground">Remember me</span>
-            </label>
+            {!isSignUp && (
+              <label className="flex items-center gap-2 cursor-pointer select-none">
+                <Checkbox
+                  checked={rememberMe}
+                  onCheckedChange={(checked) => setRememberMe(checked === true)}
+                />
+                <span className="text-sm text-muted-foreground">Remember me</span>
+              </label>
+            )}
 
             <Button
               type="submit"
@@ -135,9 +163,9 @@ export default function SignIn() {
               className="w-full rounded-xl h-11 text-sm font-medium"
             >
               {loading ? (
-                <><Loader2 className="w-4 h-4 animate-spin mr-2" />Signing in…</>
+                <><Loader2 className="w-4 h-4 animate-spin mr-2" />{isSignUp ? 'Creating account…' : 'Signing in…'}</>
               ) : (
-                'Sign In'
+                isSignUp ? 'Create Account' : 'Sign In'
               )}
             </Button>
           </form>
@@ -163,7 +191,18 @@ export default function SignIn() {
             Continue with Google
           </Button>
 
-          <p className="text-center mt-6">
+          <p className="text-center mt-6 text-sm text-muted-foreground">
+            {isSignUp ? 'Already have an account?' : "Don't have an account?"}{' '}
+            <button
+              type="button"
+              onClick={() => { setMode(isSignUp ? 'signin' : 'signup'); setError(''); }}
+              className="font-medium text-foreground hover:underline"
+            >
+              {isSignUp ? 'Sign in' : 'Sign up'}
+            </button>
+          </p>
+
+          <p className="text-center mt-4">
             <button
               type="button"
               onClick={() => window.location.href = '/register'}
