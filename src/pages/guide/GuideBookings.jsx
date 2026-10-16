@@ -3,8 +3,10 @@ import { base44 } from '@/api/base44Client';
 import AppShell from '@/components/layout/AppShell';
 import useCurrentUser from '@/hooks/useCurrentUser';
 import { Button } from '@/components/ui/button';
-import { Calendar, Check, X, User, Eye } from 'lucide-react';
+import { Calendar, Check, X, User, Eye, Ban } from 'lucide-react';
 import TripDetailModal from '@/components/traveler/TripDetailModal';
+import { isCancellable } from '@/lib/booking';
+import CancelBookingButton from '@/components/booking/CancelBookingButton';
 
 export default function GuideBookings() {
   const { user } = useCurrentUser();
@@ -36,6 +38,7 @@ export default function GuideBookings() {
   };
 
   const getEffectiveStatus = (b) => {
+    if (b.status === 'cancelled') return 'cancelled';
     if (b.status === 'rejected' || b.traveler_decision === 'rejected_by_traveler') return 'rejected';
     return b.status;
   };
@@ -67,7 +70,7 @@ export default function GuideBookings() {
 
         {/* Filter tabs */}
         <div className="flex gap-2 mb-6 flex-wrap">
-          {['all', 'pending', 'accepted', 'rejected'].map(f => (
+          {['all', 'pending', 'accepted', 'rejected', 'cancelled'].map(f => (
             <button key={f} onClick={() => setFilter(f)}
               className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors capitalize ${filter === f ? 'bg-foreground text-background' : 'bg-card border border-border text-muted-foreground hover:text-foreground'}`}>
               {f}
@@ -105,6 +108,7 @@ export default function GuideBookings() {
                       <div className="flex flex-col items-end gap-1">
                         <span className={`text-xs px-3 py-1 rounded-full capitalize font-semibold ${
                           effectiveStatus === 'accepted' ? 'bg-green-100 text-green-700' :
+                          effectiveStatus === 'cancelled' ? 'bg-secondary text-muted-foreground' :
                           effectiveStatus === 'rejected' ? 'bg-red-100 text-red-600' :
                           'bg-amber-100 text-amber-700'
                         }`}>{effectiveStatus}</span>
@@ -126,6 +130,10 @@ export default function GuideBookings() {
                 )}
 
                 {b.message && <p className="text-xs text-muted-foreground bg-secondary/50 rounded-xl px-3 py-2 mb-4">{b.message}</p>}
+
+                {b.status === 'cancelled' && b.cancel_reason && (
+                  <p className="text-xs text-muted-foreground mb-3">Reason: {b.cancel_reason}</p>
+                )}
 
                 {isConfirmed(b) && b.trip_id && (
                   <div className="mb-4">
@@ -150,6 +158,16 @@ export default function GuideBookings() {
                     <Button onClick={() => updateStatus(b.id, 'rejected')} variant="outline" size="sm" className="flex-1 rounded-xl gap-1.5 hover:bg-destructive/10 hover:text-destructive hover:border-destructive/30">
                       <X className="w-3.5 h-3.5" />Decline
                     </Button>
+                  </div>
+                )}
+
+                {isCancellable(b) && (
+                  <div className="mt-2">
+                    <CancelBookingButton
+                      booking={b}
+                      cancelledBy="guide"
+                      onDone={(updates) => setBookings(bs => bs.map(x => x.id === b.id ? { ...x, ...updates } : x))}
+                    />
                   </div>
                 )}
               </div>

@@ -4,9 +4,17 @@ import AppShell from '@/components/layout/AppShell';
 import useCurrentUser from '@/hooks/useCurrentUser';
 import { Button } from '@/components/ui/button';
 import { Calendar, MapPin, Check, X } from 'lucide-react';
+import { isCancellable } from '@/lib/booking';
+import CancelBookingButton from '@/components/booking/CancelBookingButton';
 
 // Derive the single final status badge to show the traveller
 const getFinalStatusBadge = (b) => {
+  if (b.status === 'cancelled') {
+    return {
+      label: b.cancelled_by === 'guide' ? 'Cancelled by guide' : 'Cancelled by traveller',
+      cls: 'bg-secondary text-muted-foreground',
+    };
+  }
   if (b.status === 'rejected' || b.traveler_decision === 'rejected_by_traveler') {
     return { label: 'Rejected', cls: 'bg-red-100 text-red-700' };
   }
@@ -100,6 +108,10 @@ export default function MyBookings() {
                     </p>
                   )}
 
+                  {b.status === 'cancelled' && b.cancel_reason && (
+                    <p className="text-xs text-muted-foreground mb-3">Reason: {b.cancel_reason}</p>
+                  )}
+
                   {/* Traveller action required — guide has accepted, awaiting traveller */}
                   {needsAction(b) && (
                     <div className="mt-3 pt-3 border-t border-border">
@@ -125,6 +137,16 @@ export default function MyBookings() {
                           Reject Tour Guide
                         </Button>
                       </div>
+                    </div>
+                  )}
+
+                  {isCancellable(b) && (
+                    <div className="mt-3">
+                      <CancelBookingButton
+                        booking={b}
+                        cancelledBy="traveler"
+                        onDone={(updates) => setBookings(bs => bs.map(x => x.id === b.id ? { ...x, ...updates } : x))}
+                      />
                     </div>
                   )}
                 </div>

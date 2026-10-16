@@ -45,7 +45,8 @@
         "pending",
         "accepted",
         "rejected",
-        "completed"
+        "completed",
+        "cancelled"
       ],
       "default": "pending"
     },
@@ -58,6 +59,22 @@
       ],
       "default": "pending_traveler",
       "description": "Traveller's decision after the guide accepts the booking"
+    },
+    "cancelled_by": {
+      "type": "string",
+      "enum": [
+        "traveler",
+        "guide"
+      ],
+      "description": "Who cancelled the booking"
+    },
+    "cancel_reason": {
+      "type": "string",
+      "description": "Optional reason given when cancelling"
+    },
+    "cancelled_at": {
+      "type": "string",
+      "description": "ISO timestamp when the booking was cancelled"
     }
   },
   "required": [

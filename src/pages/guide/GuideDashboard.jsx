@@ -185,6 +185,7 @@ export default function GuideDashboard() {
                       <span className={`text-xs px-2 py-0.5 rounded-full font-medium capitalize ${
                         b.status === 'accepted' ? 'bg-emerald-500/10 text-emerald-600' :
                         b.status === 'completed' ? 'bg-sky-500/10 text-sky-600' :
+                        b.status === 'cancelled' ? 'bg-secondary text-muted-foreground' :
                         b.status === 'rejected' ? 'bg-secondary text-muted-foreground' :
                         'bg-amber-500/10 text-amber-600'
                       }`}>{b.status}</span>
