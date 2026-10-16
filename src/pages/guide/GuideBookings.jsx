@@ -102,6 +102,9 @@ export default function GuideBookings() {
                   </div>
                   {(() => {
                     const effectiveStatus = getEffectiveStatus(b);
+                    const statusLabel = effectiveStatus === 'cancelled'
+                      ? (b.cancelled_by === 'guide' ? 'Cancelled by guide' : 'Cancelled by traveller')
+                      : effectiveStatus;
                     const isRejected = effectiveStatus === 'rejected';
                     const isConfirmed = !isRejected && b.traveler_decision === 'accepted_by_traveler';
                     return (
@@ -111,7 +114,7 @@ export default function GuideBookings() {
                           effectiveStatus === 'cancelled' ? 'bg-secondary text-muted-foreground' :
                           effectiveStatus === 'rejected' ? 'bg-red-100 text-red-600' :
                           'bg-amber-100 text-amber-700'
-                        }`}>{effectiveStatus}</span>
+                        }`}>{statusLabel}</span>
                         {isConfirmed && (
                           <span className="text-xs px-2.5 py-0.5 rounded-full bg-green-50 text-green-800 font-medium">Traveller confirmed</span>
                         )}
