@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
-import { X, Loader2, CheckCircle2, XCircle } from 'lucide-react';
+import { X, Loader2, CheckCircle2, RotateCcw } from 'lucide-react';
+import { todayStr } from '@/lib/booking';
 
 const SERVICE_OPTIONS = [
   { value: 'fully_accompanied', label: 'Fully accompanied' },
@@ -11,21 +12,18 @@ const SERVICE_OPTIONS = [
 const daysBetweenInclusive = (start, end) =>
   Math.floor((new Date(end) - new Date(start)) / 86400000) + 1;
 
-const todayStr = () => {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-};
-
 /**
  * Shows the booking request form for a guide from the traveller's perspective.
  * Creates a Booking record (status: pending) on submit, or records a rejection.
- * Reads existing bookings to show current status.
+ * Finished bookings (rejected / cancelled / completed / ended) never block a new
+ * request — the traveller can "Hire again", which creates a NEW booking record.
  */
 export default function GuideDecisionPanel({ guide, user }) {
-  const [booking, setBooking] = useState(null);   // existing booking with this guide
+  const [bookings, setBookings] = useState([]);   // all bookings with this guide (newest first)
   const [trips, setTrips] = useState([]);
   const [loading, setLoading] = useState(true);
   const [acting, setActing] = useState(false);
+  const [showForm, setShowForm] = useState(false);
   const [toast, setToast] = useState(null); // { type: 'success'|'error', msg }
   const [form, setForm] = useState({ start_date: '', end_date: '', trip_id: '', service_type: '', message: '' });
   const [errors, setErrors] = useState([]);
@@ -33,11 +31,10 @@ export default function GuideDecisionPanel({ guide, user }) {
   useEffect(() => {
     if (!user?.email || !guide?.guide_email) { setLoading(false); return; }
     Promise.all([
-      base44.entities.Booking
-        .filter({ traveler_email: user.email, guide_email: guide.guide_email }, '-created_date', 1),
+      base44.entities.Booking.filter({ traveler_email: user.email, guide_email: guide.guide_email }, '-created_date'),
       base44.entities.Trip.filter({ traveler_email: user.email }, '-created_date'),
     ]).then(([bookingRes, tripRes]) => {
-      setBooking(bookingRes[0] || null);
+      setBookings(bookingRes);
       setTrips(tripRes);
       setLoading(false);
     });
@@ -46,6 +43,26 @@ export default function GuideDecisionPanel({ guide, user }) {
   const showToast = (type, msg) => {
     setToast({ type, msg });
     setTimeout(() => setToast(null), 4000);
+  };
+
+  // Derived booking state (newest first)
+  const active = bookings.find(b =>
+    b.status === 'pending' ||
+    (b.status === 'accepted' && b.traveler_decision !== 'rejected_by_traveler' && (!b.end_date || b.end_date >= todayStr()))
+  );
+  const latest = bookings[0] || null;
+  const latestFinished = !active && latest && (
+    ['rejected', 'cancelled', 'completed'].includes(latest.status) ||
+    latest.traveler_decision === 'rejected_by_traveler' ||
+    (latest.status === 'accepted' && latest.end_date && latest.end_date < todayStr())
+  );
+
+  const historyNote = (b) => {
+    if (b.status === 'rejected') return 'This guide declined your last request.';
+    if (b.traveler_decision === 'rejected_by_traveler') return 'You previously rejected this guide.';
+    if (b.status === 'cancelled') return b.cancelled_by === 'guide' ? 'Your last booking was cancelled by the guide.' : 'Your last booking was cancelled by you.';
+    if (b.status === 'completed') return 'Your last booking with this guide is complete.';
+    return 'Your last booking with this guide has ended.';
   };
 
   const handleTripSelect = (tripId) => {
@@ -91,18 +108,19 @@ export default function GuideDecisionPanel({ guide, user }) {
       status: 'pending',
       traveler_decision: 'pending_traveler',
     });
-    setBooking(created);
+    setBookings(bs => [created, ...bs]);
+    setShowForm(false);
     showToast('success', `Booking request sent to ${guide.guide_name}!`);
     setActing(false);
   };
 
   const handleReject = async () => {
     setActing(true);
-    if (booking) {
-      await base44.entities.Booking.update(booking.id, {
+    if (active) {
+      await base44.entities.Booking.update(active.id, {
         traveler_decision: 'rejected_by_traveler',
       });
-      setBooking({ ...booking, traveler_decision: 'rejected_by_traveler' });
+      setBookings(bs => bs.map(b => b.id === active.id ? { ...b, traveler_decision: 'rejected_by_traveler' } : b));
     } else {
       const created = await base44.entities.Booking.create({
         traveler_email: user.email,
@@ -114,7 +132,7 @@ export default function GuideDecisionPanel({ guide, user }) {
         status: 'rejected',
         traveler_decision: 'rejected_by_traveler',
       });
-      setBooking(created);
+      setBookings(bs => [created, ...bs]);
     }
     showToast('info', `${guide.guide_name} has been marked as not interested.`);
     setActing(false);
@@ -126,8 +144,7 @@ export default function GuideDecisionPanel({ guide, user }) {
     </div>
   );
 
-  const decision = booking?.traveler_decision;
-  const hasDecided = decision === 'accepted_by_traveler' || decision === 'rejected_by_traveler';
+  const decision = active?.traveler_decision;
   const days = form.start_date && form.end_date && form.end_date >= form.start_date
     ? daysBetweenInclusive(form.start_date, form.end_date)
     : 0;
@@ -147,28 +164,37 @@ export default function GuideDecisionPanel({ guide, user }) {
         </div>
       )}
 
-      {/* Already decided */}
-      {decision === 'accepted_by_traveler' && (
-        <div className="flex items-center gap-2 text-sm font-semibold text-green-700 bg-green-50 px-4 py-3 rounded-xl mb-3">
-          <CheckCircle2 className="w-4 h-4" />
-          You've accepted this guide
-        </div>
-      )}
-      {decision === 'rejected_by_traveler' && (
-        <div className="flex items-center gap-2 text-sm font-semibold text-muted-foreground bg-secondary px-4 py-3 rounded-xl mb-3">
-          <XCircle className="w-4 h-4" />
-          You've rejected this guide
-        </div>
-      )}
-
-      {/* Booking request form — hidden once the traveller has decided */}
-      {!hasDecided && (
-        <div className="space-y-3">
-          {booking && (
-            <p className="text-xs text-muted-foreground px-3 py-2 bg-secondary/50 rounded-xl">
+      {/* Active booking status */}
+      {active && (
+        <>
+          {decision === 'accepted_by_traveler' && (
+            <div className="flex items-center gap-2 text-sm font-semibold text-green-700 bg-green-50 px-4 py-3 rounded-xl mb-3">
+              <CheckCircle2 className="w-4 h-4" />
+              You've accepted this guide
+            </div>
+          )}
+          {decision !== 'accepted_by_traveler' && (
+            <p className="text-xs text-muted-foreground px-3 py-2 bg-secondary/50 rounded-xl mb-3">
               Request sent — awaiting the guide's response.
             </p>
           )}
+        </>
+      )}
+
+      {/* Finished history — offer to hire again */}
+      {!active && latestFinished && !showForm && (
+        <div className="text-sm text-muted-foreground bg-secondary/50 rounded-xl px-4 py-3 mb-3 flex items-center justify-between gap-3 flex-wrap">
+          <p>{historyNote(latest)}</p>
+          <Button size="sm" className="rounded-xl gap-1.5 whitespace-nowrap" onClick={() => setShowForm(true)}>
+            <RotateCcw className="w-3.5 h-3.5" />
+            Hire again
+          </Button>
+        </div>
+      )}
+
+      {/* Booking request form — new bookings, or hire-again after a finished one */}
+      {!active && (!latest || showForm) && (
+        <div className="space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="text-xs font-medium mb-1.5 block">Start Date *</label>
@@ -249,8 +275,8 @@ export default function GuideDecisionPanel({ guide, user }) {
         </div>
       )}
 
-      {/* Reject — always available so traveller can change their mind */}
-      {decision !== 'rejected_by_traveler' && (
+      {/* Reject — only while there's no finished history (a new or active booking) */}
+      {(active ? decision !== 'rejected_by_traveler' : !latest) && (
         <Button
           size="sm"
           variant="outline"
