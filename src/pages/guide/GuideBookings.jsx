@@ -3,13 +3,16 @@ import { base44 } from '@/api/base44Client';
 import AppShell from '@/components/layout/AppShell';
 import useCurrentUser from '@/hooks/useCurrentUser';
 import { Button } from '@/components/ui/button';
-import { Calendar, Check, X, User } from 'lucide-react';
+import { Calendar, Check, X, User, Eye } from 'lucide-react';
+import TripDetailModal from '@/components/traveler/TripDetailModal';
 
 export default function GuideBookings() {
   const { user } = useCurrentUser();
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
+  const [viewTrip, setViewTrip] = useState(null);      // trip opened in read-only modal
+  const [loadingTripId, setLoadingTripId] = useState(null);
 
   const fetchBookings = () => {
     if (!user?.email) return;
@@ -35,6 +38,19 @@ export default function GuideBookings() {
   const getEffectiveStatus = (b) => {
     if (b.status === 'rejected' || b.traveler_decision === 'rejected_by_traveler') return 'rejected';
     return b.status;
+  };
+
+  // Confirmed booking: guide accepted AND traveller hasn't rejected
+  const isConfirmed = (b) => b.status === 'accepted' && b.traveler_decision !== 'rejected_by_traveler';
+
+  const openTrip = async (booking) => {
+    setLoadingTripId(booking.id);
+    try {
+      const trip = await base44.entities.Trip.get(booking.trip_id);
+      setViewTrip(trip);
+    } finally {
+      setLoadingTripId(null);
+    }
   };
 
   const filtered = filter === 'all'
@@ -111,6 +127,21 @@ export default function GuideBookings() {
 
                 {b.message && <p className="text-xs text-muted-foreground bg-secondary/50 rounded-xl px-3 py-2 mb-4">{b.message}</p>}
 
+                {isConfirmed(b) && b.trip_id && (
+                  <div className="mb-4">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="rounded-xl gap-1.5"
+                      disabled={loadingTripId === b.id}
+                      onClick={() => openTrip(b)}
+                    >
+                      {loadingTripId === b.id ? <span className="w-3.5 h-3.5 border-2 border-border border-t-foreground rounded-full animate-spin" /> : <Eye className="w-3.5 h-3.5" />}
+                      View trip plan
+                    </Button>
+                  </div>
+                )}
+
                 {b.status === 'pending' && (
                   <div className="flex gap-2">
                     <Button onClick={() => updateStatus(b.id, 'accepted')} size="sm" className="flex-1 rounded-xl gap-1.5">
@@ -125,6 +156,9 @@ export default function GuideBookings() {
             ))}
           </div>
         )}
+
+        {/* Read-only trip plan modal (no edit/delete) */}
+        {viewTrip && <TripDetailModal trip={viewTrip} onClose={() => setViewTrip(null)} />}
       </div>
     </AppShell>
   );

@@ -16,6 +16,13 @@ export default function TripDetailModal({ trip, onClose }) {
           </Button>
         </div>
         <div className="overflow-y-auto p-5">
+          {(trip.start_date || trip.travelers_count || trip.budget) && (
+            <div className="flex flex-wrap gap-x-6 gap-y-1 text-xs text-muted-foreground mb-4 bg-secondary/50 rounded-xl px-4 py-3">
+              {trip.start_date && <span><span className="font-medium text-foreground">Dates:</span> {trip.start_date} → {trip.end_date || '—'}</span>}
+              {trip.travelers_count && <span><span className="font-medium text-foreground">Travellers:</span> {trip.travelers_count}</span>}
+              {trip.budget && <span><span className="font-medium text-foreground">Budget:</span> ${Number(trip.budget).toLocaleString()}</span>}
+            </div>
+          )}
           {trip.itinerary ? (
             <ReactMarkdown
               className="prose prose-sm max-w-none"
