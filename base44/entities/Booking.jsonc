@@ -28,6 +28,14 @@
     "message": {
       "type": "string"
     },
+    "trip_id": {
+      "type": "string",
+      "description": "Optional link to one of the traveller's saved trips"
+    },
+    "service_type": {
+      "type": "string",
+      "description": "Service the traveller booked: fully_accompanied or guiding_only"
+    },
     "total_price": {
       "type": "number"
     },

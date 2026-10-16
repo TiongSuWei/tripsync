@@ -16,9 +16,21 @@ export default function SearchPlan() {
   const [saved, setSaved] = useState(false);
   const [destinationImageUrl, setDestinationImageUrl] = useState(null);
   const [placeImages, setPlaceImages] = useState([]);
+  const [dateError, setDateError] = useState('');
 
   const handleGenerate = async () => {
     if (!form.destination) return;
+    const d = new Date();
+    const todayStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    if (form.startDate && form.startDate < todayStr) {
+      setDateError('Start date cannot be in the past.');
+      return;
+    }
+    if (form.startDate && form.endDate && form.endDate < form.startDate) {
+      setDateError('End date must be on or after the start date.');
+      return;
+    }
+    setDateError('');
     setLoading(true);
     setItinerary('');
     setSaved(false);
@@ -119,6 +131,9 @@ Format using markdown with: ## ✈️ Trip Summary, ## 🏨 Accommodation (real 
                 className="w-full px-3 py-2.5 bg-background border border-border rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-foreground/30 resize-none" />
             </div>
           </div>
+          {dateError && (
+            <p className="text-xs text-destructive mb-3">{dateError}</p>
+          )}
           <Button onClick={handleGenerate} disabled={loading || !form.destination} className="w-full rounded-xl gap-2">
             {loading ? <><Loader2 className="w-4 h-4 animate-spin" />Generating your plan…</> : <><Search className="w-4 h-4" />Generate Itinerary</>}
           </Button>

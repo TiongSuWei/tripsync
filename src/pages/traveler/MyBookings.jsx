@@ -10,7 +10,7 @@ const getFinalStatusBadge = (b) => {
   if (b.status === 'rejected' || b.traveler_decision === 'rejected_by_traveler') {
     return { label: 'Rejected', cls: 'bg-red-100 text-red-700' };
   }
-  if (b.traveler_decision === 'accepted_by_traveler') {
+  if (b.status === 'accepted' && b.traveler_decision !== 'rejected_by_traveler') {
     return { label: 'Confirmed', cls: 'bg-green-100 text-green-800' };
   }
   if (b.status === 'accepted') {

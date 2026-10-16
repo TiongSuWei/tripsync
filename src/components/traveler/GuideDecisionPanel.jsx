@@ -1,24 +1,46 @@
 import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
-import { Check, X, Loader2, CheckCircle2, XCircle } from 'lucide-react';
+import { X, Loader2, CheckCircle2, XCircle } from 'lucide-react';
+
+const SERVICE_OPTIONS = [
+  { value: 'fully_accompanied', label: 'Fully accompanied' },
+  { value: 'guiding_only', label: 'Guiding only' },
+];
+
+const daysBetweenInclusive = (start, end) =>
+  Math.floor((new Date(end) - new Date(start)) / 86400000) + 1;
+
+const todayStr = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+};
 
 /**
- * Shows Accept / Reject actions for a guide from the traveller's perspective.
- * Creates a Booking record on Accept, or records a rejection decision.
+ * Shows the booking request form for a guide from the traveller's perspective.
+ * Creates a Booking record (status: pending) on submit, or records a rejection.
  * Reads existing bookings to show current status.
  */
 export default function GuideDecisionPanel({ guide, user }) {
   const [booking, setBooking] = useState(null);   // existing booking with this guide
+  const [trips, setTrips] = useState([]);
   const [loading, setLoading] = useState(true);
   const [acting, setActing] = useState(false);
   const [toast, setToast] = useState(null); // { type: 'success'|'error', msg }
+  const [form, setForm] = useState({ start_date: '', end_date: '', trip_id: '', service_type: '', message: '' });
+  const [errors, setErrors] = useState([]);
 
   useEffect(() => {
     if (!user?.email || !guide?.guide_email) { setLoading(false); return; }
-    base44.entities.Booking
-      .filter({ traveler_email: user.email, guide_email: guide.guide_email }, '-created_date', 1)
-      .then(res => { setBooking(res[0] || null); setLoading(false); });
+    Promise.all([
+      base44.entities.Booking
+        .filter({ traveler_email: user.email, guide_email: guide.guide_email }, '-created_date', 1),
+      base44.entities.Trip.filter({ traveler_email: user.email }, '-created_date'),
+    ]).then(([bookingRes, tripRes]) => {
+      setBooking(bookingRes[0] || null);
+      setTrips(tripRes);
+      setLoading(false);
+    });
   }, [user?.email, guide?.guide_email]);
 
   const showToast = (type, msg) => {
@@ -26,30 +48,51 @@ export default function GuideDecisionPanel({ guide, user }) {
     setTimeout(() => setToast(null), 4000);
   };
 
-  const handleAccept = async () => {
+  const handleTripSelect = (tripId) => {
+    setForm(f => {
+      const trip = trips.find(t => t.id === tripId);
+      return {
+        ...f,
+        trip_id: tripId,
+        ...(trip ? { start_date: trip.start_date || f.start_date, end_date: trip.end_date || f.end_date } : {}),
+      };
+    });
+    setErrors([]);
+  };
+
+  const validate = () => {
+    const errs = [];
+    if (!form.start_date) errs.push('Start date is required.');
+    if (!form.end_date) errs.push('End date is required.');
+    if (form.start_date && form.start_date < todayStr()) errs.push('Start date cannot be in the past.');
+    if (form.start_date && form.end_date && form.end_date < form.start_date) errs.push('End date must be on or after the start date.');
+    return errs;
+  };
+
+  const handleSendRequest = async () => {
+    const errs = validate();
+    setErrors(errs);
+    if (errs.length > 0) return;
     setActing(true);
-    // If a booking already exists, flip its traveler_decision to accepted
-    if (booking) {
-      const updated = await base44.entities.Booking.update(booking.id, {
-        traveler_decision: 'accepted_by_traveler',
-      });
-      setBooking({ ...booking, traveler_decision: 'accepted_by_traveler' });
-      showToast('success', `You've accepted ${guide.guide_name} as your guide!`);
-    } else {
-      // Create a new booking request
-      const created = await base44.entities.Booking.create({
-        traveler_email: user.email,
-        traveler_name: user.full_name || user.email,
-        guide_email: guide.guide_email,
-        guide_name: guide.guide_name,
-        destination: guide.location || '',
-        total_price: guide.price_per_day || 0,
-        status: 'pending',
-        traveler_decision: 'accepted_by_traveler',
-      });
-      setBooking(created);
-      showToast('success', `Booking request sent to ${guide.guide_name}!`);
-    }
+    const days = daysBetweenInclusive(form.start_date, form.end_date);
+    const serviceType = guide.service_type === 'both' ? form.service_type : (guide.service_type || '');
+    const created = await base44.entities.Booking.create({
+      traveler_email: user.email,
+      traveler_name: user.full_name || user.email,
+      guide_email: guide.guide_email,
+      guide_name: guide.guide_name,
+      destination: guide.location || '',
+      start_date: form.start_date,
+      end_date: form.end_date,
+      message: form.message,
+      trip_id: form.trip_id || '',
+      service_type: serviceType,
+      total_price: (guide.price_per_day || 0) * days,
+      status: 'pending',
+      traveler_decision: 'pending_traveler',
+    });
+    setBooking(created);
+    showToast('success', `Booking request sent to ${guide.guide_name}!`);
     setActing(false);
   };
 
@@ -67,7 +110,7 @@ export default function GuideDecisionPanel({ guide, user }) {
         guide_email: guide.guide_email,
         guide_name: guide.guide_name,
         destination: guide.location || '',
-        total_price: guide.price_per_day || 0,
+        total_price: 0,
         status: 'rejected',
         traveler_decision: 'rejected_by_traveler',
       });
@@ -84,6 +127,12 @@ export default function GuideDecisionPanel({ guide, user }) {
   );
 
   const decision = booking?.traveler_decision;
+  const hasDecided = decision === 'accepted_by_traveler' || decision === 'rejected_by_traveler';
+  const days = form.start_date && form.end_date && form.end_date >= form.start_date
+    ? daysBetweenInclusive(form.start_date, form.end_date)
+    : 0;
+
+  const inputClass = "w-full px-3 py-2.5 bg-background border border-border rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-foreground/30";
 
   return (
     <div className="mt-4 pt-4 border-t border-border">
@@ -112,28 +161,107 @@ export default function GuideDecisionPanel({ guide, user }) {
         </div>
       )}
 
-      {/* Action buttons — always show so traveller can change their mind */}
-      <div className="flex gap-2">
-        <Button
-          size="sm"
-          className="flex-1 rounded-xl gap-1.5"
-          disabled={acting || decision === 'accepted_by_traveler'}
-          onClick={handleAccept}
-        >
-          {acting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
-          Accept Guide
-        </Button>
+      {/* Booking request form — hidden once the traveller has decided */}
+      {!hasDecided && (
+        <div className="space-y-3">
+          {booking && (
+            <p className="text-xs text-muted-foreground px-3 py-2 bg-secondary/50 rounded-xl">
+              Request sent — awaiting the guide's response.
+            </p>
+          )}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs font-medium mb-1.5 block">Start Date *</label>
+              <input
+                type="date"
+                value={form.start_date}
+                onChange={e => { setForm(f => ({ ...f, start_date: e.target.value })); setErrors([]); }}
+                className={inputClass}
+              />
+            </div>
+            <div>
+              <label className="text-xs font-medium mb-1.5 block">End Date *</label>
+              <input
+                type="date"
+                value={form.end_date}
+                onChange={e => { setForm(f => ({ ...f, end_date: e.target.value })); setErrors([]); }}
+                className={inputClass}
+              />
+            </div>
+          </div>
+
+          {trips.length > 0 && (
+            <div>
+              <label className="text-xs font-medium mb-1.5 block">Link a saved trip (optional)</label>
+              <select
+                value={form.trip_id}
+                onChange={e => handleTripSelect(e.target.value)}
+                className={inputClass}
+              >
+                <option value="">No saved trip</option>
+                {trips.map(t => <option key={t.id} value={t.id}>{t.title || t.destination}</option>)}
+              </select>
+            </div>
+          )}
+
+          {guide.service_type === 'both' && (
+            <div>
+              <label className="text-xs font-medium mb-1.5 block">Service type *</label>
+              <select
+                value={form.service_type}
+                onChange={e => setForm(f => ({ ...f, service_type: e.target.value }))}
+                className={inputClass}
+              >
+                <option value="">Choose a service…</option>
+                {SERVICE_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+              </select>
+            </div>
+          )}
+
+          <div>
+            <label className="text-xs font-medium mb-1.5 block">Message</label>
+            <textarea
+              value={form.message}
+              onChange={e => setForm(f => ({ ...f, message: e.target.value }))}
+              rows={2}
+              placeholder={`Tell ${guide.guide_name || 'the guide'} about your plans…`}
+              className={`${inputClass} resize-none`}
+            />
+          </div>
+
+          {/* Validation errors */}
+          {errors.length > 0 && (
+            <div className="px-3 py-2 bg-red-50 text-red-700 text-xs rounded-xl space-y-1">
+              {errors.map((err, i) => <p key={i}>{err}</p>)}
+            </div>
+          )}
+
+          {days > 0 && guide.price_per_day > 0 && (
+            <p className="text-xs text-muted-foreground">
+              Estimated total: <span className="font-medium text-foreground">${((guide.price_per_day) * days).toLocaleString()}</span> ({days} day{days > 1 ? 's' : ''} × ${guide.price_per_day})
+            </p>
+          )}
+
+          <Button size="sm" className="w-full rounded-xl gap-1.5" disabled={acting} onClick={handleSendRequest}>
+            {acting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
+            Send Booking Request
+          </Button>
+        </div>
+      )}
+
+      {/* Reject — always available so traveller can change their mind */}
+      {decision !== 'rejected_by_traveler' && (
         <Button
           size="sm"
           variant="outline"
-          className="flex-1 rounded-xl gap-1.5 hover:bg-destructive/10 hover:text-destructive hover:border-destructive/30"
-          disabled={acting || decision === 'rejected_by_traveler'}
+          className="w-full mt-2 rounded-xl gap-1.5 hover:bg-destructive/10 hover:text-destructive hover:border-destructive/30"
+          disabled={acting}
           onClick={handleReject}
         >
           {acting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <X className="w-3.5 h-3.5" />}
           Reject Guide
         </Button>
-      </div>
+      )}
     </div>
   );
 }
