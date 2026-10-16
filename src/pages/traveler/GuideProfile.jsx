@@ -4,6 +4,7 @@ import { base44 } from '@/api/base44Client';
 import AppShell from '@/components/layout/AppShell';
 import useCurrentUser from '@/hooks/useCurrentUser';
 import { MapPin, Star, Globe, DollarSign, Calendar } from 'lucide-react';
+import { getServiceType } from '@/components/traveler/ServiceTypeBadge';
 import GuideDecisionPanel from '@/components/traveler/GuideDecisionPanel';
 import GuideRatingPanel from '@/components/traveler/GuideRatingPanel';
 
@@ -12,10 +13,20 @@ export default function GuideProfilePage() {
   const { user } = useCurrentUser();
   const [guide, setGuide] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [confirmedBooking, setConfirmedBooking] = useState(false);
 
   useEffect(() => {
     base44.entities.GuideProfile.filter({ id }).then(r => { setGuide(r[0]); setLoading(false); });
   }, [id]);
+
+  // Contact details are only visible once this traveller's booking with the
+  // guide is confirmed (guide accepted, traveller hasn't rejected it).
+  useEffect(() => {
+    if (!guide || !user?.email) return;
+    base44.entities.Booking.filter({ traveler_email: user.email, guide_email: guide.guide_email, status: 'accepted' }).then(r => {
+      setConfirmedBooking(r.some(b => b.traveler_decision !== 'rejected_by_traveler'));
+    });
+  }, [guide, user?.email]);
 
   if (loading) return <AppShell user={user}><div className="flex justify-center py-20"><div className="w-8 h-8 border-4 border-border border-t-foreground rounded-full animate-spin" /></div></AppShell>;
   if (!guide) return <AppShell user={user}><div className="p-6 text-center text-muted-foreground">Guide not found.</div></AppShell>;
@@ -42,11 +53,25 @@ export default function GuideProfilePage() {
                     <span className="text-xs text-muted-foreground">({guide.total_reviews})</span>
                   </div>
                 )}
+                {getServiceType(guide.service_type) && (
+                  <div className="mt-3">
+                    <span className="text-xs px-3 py-1 bg-secondary rounded-full inline-block">{getServiceType(guide.service_type).label}</span>
+                    <p className="text-xs text-muted-foreground mt-1.5">{getServiceType(guide.service_type).description}</p>
+                  </div>
+                )}
               </div>
               <div className="space-y-3 text-sm border-t border-border pt-4">
                 {guide.price_per_day && <div className="flex items-center gap-2"><DollarSign className="w-4 h-4 text-muted-foreground" /><span className="font-semibold">${guide.price_per_day}</span> / day</div>}
                 {guide.languages?.length > 0 && <div className="flex items-center gap-2"><Globe className="w-4 h-4 text-muted-foreground" />{guide.languages.join(', ')}</div>}
                 {guide.availability && <div className="flex items-center gap-2"><Calendar className="w-4 h-4 text-muted-foreground" />{guide.availability}</div>}
+              </div>
+              <div className="border-t border-border pt-4 text-sm">
+                <p className="text-xs text-muted-foreground mb-1.5">Contact</p>
+                {confirmedBooking && guide.contact_email ? (
+                  <p className="break-all">{guide.contact_email}</p>
+                ) : (
+                  <p className="text-xs text-muted-foreground">Contact details are shared once your booking is confirmed.</p>
+                )}
               </div>
             </div>
           </div>

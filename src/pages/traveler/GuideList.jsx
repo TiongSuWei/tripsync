@@ -5,6 +5,7 @@ import useCurrentUser from '@/hooks/useCurrentUser';
 import { MapPin, Star, Search } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import ServiceTypeBadge from '@/components/traveler/ServiceTypeBadge';
 
 export default function GuideList() {
   const { user } = useCurrentUser();
@@ -62,6 +63,9 @@ export default function GuideList() {
                     </div>
                   </div>
                 </div>
+                {guide.service_type && (
+                  <div className="mb-2"><ServiceTypeBadge type={guide.service_type} /></div>
+                )}
                 {guide.rating > 0 && (
                   <div className="flex items-center gap-1 text-xs mb-2">
                     <Star className="w-3.5 h-3.5 fill-foreground" />

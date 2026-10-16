@@ -35,6 +35,19 @@
     "availability": {
       "type": "string"
     },
+    "contact_email": {
+      "type": "string",
+      "description": "Email travellers can use to reach the guide directly"
+    },
+    "service_type": {
+      "type": "string",
+      "enum": [
+        "fully_accompanied",
+        "guiding_only",
+        "both"
+      ],
+      "description": "How the guide serves travellers: fully accompanied, guiding only, or both"
+    },
     "rating": {
       "type": "number"
     },

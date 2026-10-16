@@ -4,6 +4,7 @@ import AppShell from '@/components/layout/AppShell';
 import useCurrentUser from '@/hooks/useCurrentUser';
 import { Button } from '@/components/ui/button';
 import { Save, Loader2, Upload } from 'lucide-react';
+import { SERVICE_TYPE_OPTIONS } from '@/components/traveler/ServiceTypeBadge';
 
 const SPECIALTIES_OPTIONS = ['City Tours', 'Nature & Hiking', 'Food & Culinary', 'History & Culture', 'Adventure Sports', 'Photography', 'Family Tours', 'Luxury Travel', 'Budget Travel'];
 const LANGUAGES_OPTIONS = ['English', 'Spanish', 'French', 'German', 'Italian', 'Japanese', 'Mandarin', 'Arabic', 'Portuguese'];
@@ -11,18 +12,19 @@ const LANGUAGES_OPTIONS = ['English', 'Spanish', 'French', 'German', 'Italian', 
 export default function GuideProfileEditor() {
   const { user } = useCurrentUser();
   const [profile, setProfile] = useState(null);
-  const [form, setForm] = useState({ guide_name: '', bio: '', location: '', price_per_day: '', availability: '', photo_url: '', languages: [], specialties: [] });
+  const [form, setForm] = useState({ guide_name: '', bio: '', location: '', price_per_day: '', availability: '', photo_url: '', contact_email: '', service_type: '', languages: [], specialties: [] });
+  const [contactError, setContactError] = useState('');
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     if (!user?.email) return;
-    setForm(f => ({ ...f, guide_name: user.full_name || '' }));
+    setForm(f => ({ ...f, guide_name: user.full_name || '', contact_email: f.contact_email || user.email }));
     base44.entities.GuideProfile.filter({ guide_email: user.email }).then(r => {
       if (r[0]) {
         setProfile(r[0]);
-        setForm({ ...r[0], price_per_day: r[0].price_per_day || '', languages: r[0].languages || [], specialties: r[0].specialties || [] });
+        setForm({ ...r[0], price_per_day: r[0].price_per_day || '', contact_email: r[0].contact_email || user.email, service_type: r[0].service_type || '', languages: r[0].languages || [], specialties: r[0].specialties || [] });
       }
     });
   }, [user?.email]);
@@ -46,6 +48,11 @@ export default function GuideProfileEditor() {
       alert('Please enter your full name.');
       return;
     }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test((form.contact_email || '').trim())) {
+      setContactError('Please enter a valid email address.');
+      return;
+    }
+    setContactError('');
     setSaving(true);
     const data = {
       ...form,
@@ -105,6 +112,18 @@ export default function GuideProfileEditor() {
           </div>
 
           <div>
+            <label className="text-sm font-medium mb-1.5 block">Contact Email</label>
+            <input
+              type="email"
+              value={form.contact_email}
+              onChange={e => { setForm(f => ({ ...f, contact_email: e.target.value })); if (contactError) setContactError(''); }}
+              className={inputClass}
+              placeholder="Travellers can reach you at this address"
+            />
+            {contactError && <p className="text-xs text-destructive mt-1.5">{contactError}</p>}
+          </div>
+
+          <div>
             <label className="text-sm font-medium mb-1.5 block">Location *</label>
             <input value={form.location} onChange={e => setForm(f => ({ ...f, location: e.target.value }))} className={inputClass} placeholder="e.g. Tokyo, Japan" />
           </div>
@@ -144,6 +163,23 @@ export default function GuideProfileEditor() {
                 <button key={s} onClick={() => toggleArr('specialties', s)}
                   className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${form.specialties.includes(s) ? 'bg-foreground text-background border-foreground' : 'border-border hover:border-foreground/30'}`}>
                   {s}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label className="text-sm font-medium mb-2 block">Service Type</label>
+            <div className="space-y-2">
+              {SERVICE_TYPE_OPTIONS.map(o => (
+                <button
+                  key={o.value}
+                  type="button"
+                  onClick={() => setForm(f => ({ ...f, service_type: o.value }))}
+                  className={`w-full text-left px-4 py-3 rounded-xl border transition-colors ${form.service_type === o.value ? 'border-foreground bg-secondary/60' : 'border-border hover:border-foreground/30'}`}
+                >
+                  <p className="text-sm font-medium">{o.label}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{o.description}</p>
                 </button>
               ))}
             </div>
